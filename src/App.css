@@ -1,38 +1,73 @@
-.App {
-  text-align: center;
+/* Global styles */
+body,
+html,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Container styles */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+/* Responsive styles */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+@media (max-width: 480px) {
+  .container {
+    padding: 5px;
+  }
+}
+
+.flex-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  flex-wrap: wrap;
 }
 
-.App-link {
-  color: #61dafb;
+.flex-item {
+  flex: 1;
+  min-width: 250px;
+  /* Set a minimum width */
+  margin: 10px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+@media (max-width: 1024px) {
+  .example {
+    font-size: 18px;
   }
-  to {
-    transform: rotate(360deg);
+}
+
+@media (max-width: 768px) {
+  .example {
+    font-size: 16px;
   }
+}
+
+@media (max-width: 480px) {
+  .example {
+    font-size: 14px;
+  }
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+.imgCard:hover {
+z-index: 999999;
+}
+
+.product-card .antd-card .ant-card-body {
+  padding: 12px;
 }
