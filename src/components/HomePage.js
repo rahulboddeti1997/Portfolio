@@ -9,7 +9,10 @@ const HomePage = (props) => {
     key: index + 1,
     title: `Card ${index + 1}`,
     description: `www.instagram.com/${index + 1}`,
-    imageUrl: width > 780 ? `${index + 1}.svg` : `${index + 1}Mob.svg`, // Placeholder image URL
+    imageUrl:
+      width > 780
+        ? `/Portfolio/images/${index + 1}.svg`
+        : `/Portfolio/images/${index + 1}Mob.svg`,
   }));
 
   const itemsCount = width > 1024 ? 8 : width > 480 ? 4 : 2;
@@ -145,7 +148,11 @@ const HomePage = (props) => {
           marginTop: 25,
           marginBottom: 20,
         }}
-        src={width > 780 ? "/saveTheDate.svg" : "/saveTheDateMob.svg"}
+        src={
+          width > 780
+            ? "/Portfolio/images/saveTheDate.svg"
+            : "/Portfolio/images/saveTheDateMob.svg"
+        }
       />
     </div>
   );
