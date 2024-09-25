@@ -198,7 +198,7 @@ const App = () => {
             display: "flex",
             justifyContent: "space-between",
             zIndex: 1,
-            height: 60,
+            height: 100,
             paddingBottom: 65,
           }}
         >

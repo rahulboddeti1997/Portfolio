@@ -107,7 +107,7 @@ const HomePage = (props) => {
             {categoryItems.splice(0, 4).map((item) => (
               <Image
                 preview={false}
-                width={80}
+                width={85}
                 height={120}
                 alt={item.title}
                 onClick={() =>
@@ -133,7 +133,7 @@ const HomePage = (props) => {
             {categoryItems.map((item) => (
               <Image
                 preview={false}
-                width={80}
+                width={85}
                 height={120}
                 alt={item.title}
                 src={item.imageUrl}
