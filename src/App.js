@@ -109,8 +109,8 @@ const App = () => {
           src={"/Portfolio/images/Logo.svg"}
           alt="logo"
           style={{
-            width: width > 728 ? 90 : 130,
-            height: width > 728 ? 110 : 140,
+            width: width > 728 ? 90 : 110,
+            height: width > 728 ? 110 : 130,
           }}
           visible={false}
           preview={false}
@@ -124,13 +124,13 @@ const App = () => {
                   history.push({ pathname: `/Portfolio/${item.key}` })
                 }
                 icon={
-                  location.pathname === `/${item.key}`
+                  location.pathname === `/Portfolio/${item.key}`
                     ? item.selectedIcon
                     : item.icon
                 }
                 style={{
                   backgroundColor:
-                    location.pathname === `/${item.key}`
+                    location.pathname === `/Portfolio/${item.key}`
                       ? "antiquewhite"
                       : "#001529",
                   borderRadius: "40px",
@@ -138,7 +138,7 @@ const App = () => {
                   height: 40,
                   marginRight: 60,
                   color:
-                    location.pathname === `/${item.key}`
+                    location.pathname === `/Portfolio/${item.key}`
                       ? "#001529"
                       : "antiquewhite",
                   fontWeight: "bold",
@@ -154,11 +154,11 @@ const App = () => {
                       height: 24,
                       alignItems: "center",
                       backgroundColor:
-                        location.pathname === `/${item.key}`
+                        location.pathname === `/Portfolio/${item.key}`
                           ? "#001529"
                           : "antiquewhite",
                       color:
-                        location.pathname === `/${item.key}`
+                        location.pathname === `/Portfolio/${item.key}`
                           ? "white"
                           : "#001529",
                       borderRadius: 20,
@@ -200,6 +200,7 @@ const App = () => {
             zIndex: 1,
             height: 50,
             paddingBottom: 65,
+            marginTop: 30,
           }}
         >
           {items.map((item) => (

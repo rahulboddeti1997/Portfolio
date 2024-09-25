@@ -98,7 +98,7 @@ const HomePage = (props) => {
               display: "flex",
               paddingLeft: 0,
               paddingRight: 0,
-              paddingBottom: 10,
+              paddingBottom: 5,
               marginTop: 5,
               backgroundColor: "antiquewhite",
               justifyContent: "space-between",

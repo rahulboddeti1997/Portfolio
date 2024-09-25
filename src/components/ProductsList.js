@@ -11,19 +11,27 @@ const ProductsList = (props) => {
   const { savedItems, setSavedItems, products, setProducts } =
     useContext(CartContext);
   const mobileWidth =
-    width > 768 ? 200 : width > 480 ? (width * 30) / 100 : (width * 44) / 100;
+    width > 768 ? 200 : width > 480 ? (width * 30) / 100 : (width * 50) / 100;
   return (
     <div
       style={{
         margin: 15,
+        marginRight: width > 728 ? 15 : 0,
+        marginLeft: width > 728 ? 15 : 0,
         height: "100%",
         overflow: "scroll",
       }}
     >
-      <div style={{ display: "flex" }}>
+      <div
+        style={{
+          display: "flex",
+          marginLeft: width > 728 ? 10 : 0,
+          width: "100%",
+        }}
+      >
         {width > 768 && <div style={{ width: 350 }}></div>}
         <Flex
-          gap={"small"}
+          gap={width > 728 ? "small" : 0}
           wrap
           style={{ marginTop: 40, alignItems: "center" }}
         >
@@ -33,7 +41,7 @@ const ProductsList = (props) => {
               className="product-card"
               style={{
                 width: mobileWidth,
-                borderRadius: 10,
+                borderRadius: width > 728 ? 10 : 0,
               }}
               cover={
                 <>
@@ -41,7 +49,9 @@ const ProductsList = (props) => {
                     preview={false}
                     width={mobileWidth}
                     height={mobileWidth}
-                    style={{ borderRadius: "10px 10px 0px 0px" }}
+                    style={{
+                      borderRadius: width > 728 ? "10px 10px 0px 0px" : "0px",
+                    }}
                     alt="example"
                     src={product.image}
                   />
@@ -102,7 +112,7 @@ const ProductsList = (props) => {
               <Tooltip title={product.name} trigger="hover">
                 <h4
                   style={{
-                    fontSize: width > 728 ? 15 : 19,
+                    fontSize: width > 728 ? 15 : 12,
                     marginTop: -15,
                     marginBottom: 5,
                     overflow: "hidden",
@@ -129,7 +139,7 @@ const ProductsList = (props) => {
                   >
                     <span
                       style={{
-                        fontSize: 16,
+                        fontSize: width > 728 ? 16 : 12,
                         fontWeight: "bold",
                         color: "green",
                         marginRight: 5,
@@ -138,13 +148,19 @@ const ProductsList = (props) => {
                       {" "}
                       {product.discount}%{" "}
                     </span>
-                    <span style={{ fontSize: 14, fontWeight: 600 }}>
+                    <span
+                      style={{
+                        fontSize: width > 728 ? 14 : 12,
+                        fontWeight: 600,
+                      }}
+                    >
                       ₹{product.price}.00
                     </span>
                   </div>
 
                   <span style={{ fontSize: 8 }}>
-                    M.R.P: <span style={{ fontSize: 12 }}>₹</span>
+                    M.R.P:{" "}
+                    <span style={{ fontSize: width > 728 ? 12 : 10 }}>₹</span>
                     <span
                       style={{ fontSize: 12, textDecoration: "line-through" }}
                     >
@@ -183,6 +199,7 @@ const ProductsList = (props) => {
                       marginLeft: 10,
                       fontWeight: "bold",
                       width: "98%",
+                      fontSize: width > 728 ? 14 : 10,
                     }}
                   >
                     ADD TO CART
@@ -200,6 +217,7 @@ const ProductsList = (props) => {
                       marginLeft: 10,
                       fontWeight: "bold",
                       width: "98%",
+                      fontSize: width > 728 ? 14 : 10,
                     }}
                   >
                     GO TO CART

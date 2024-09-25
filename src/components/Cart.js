@@ -118,55 +118,114 @@ const Cart = () => {
         justifyContent: "center",
         marginBottom: 100,
         marginTop: 30,
+        overflow: "scroll",
       }}
     >
-      <Card
-        title={
-          <h3 style={{ margin: 5 }}>
-            {cartProducts.length > 0 ? "Shopping Cart" : "Your Cart is Empty"}
-          </h3>
-        }
-        style={{
-          width: 800,
-          margin: 15,
-          height: total > 0 ? "100%" : 200,
-        }}
-        bodyStyle={{ padding: 10 }}
-      >
-        {cartProducts.map((item) => (
-          <div style={{ backgroundColor: "white" }} bodyStyle={{ padding: 6 }}>
+      {width > 728 && (
+        <Card
+          title={
+            <h3 style={{ margin: 5 }}>
+              {cartProducts.length > 0 ? "Shopping Cart" : "Your Cart is Empty"}
+            </h3>
+          }
+          style={{
+            width: 800,
+            margin: 15,
+            height: total > 0 ? "100%" : 200,
+          }}
+          bodyStyle={{ padding: 10 }}
+        >
+          {cartProducts.map((item) => (
             <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                padding: 10,
-                backgroundColor: "white",
-              }}
+              style={{ backgroundColor: "white" }}
+              bodyStyle={{ padding: 6 }}
             >
-              <Image
-                preview={false}
-                width={width > 1024 ? 130 : width > 480 ? 44 : 40}
-                height={width > 1024 ? 115 : width > 480 ? 65 : 60}
-                alt={item.name}
-                src={item.image}
+              <div
                 style={{
-                  backgroundColor: "antiquewhite",
-                  borderRadius: width > 1024 ? 20 : width > 480 ? 6 : 4,
-                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "row",
+                  padding: 10,
+                  backgroundColor: "white",
                 }}
-              />
-              {Item({ item: item, fontSize: 14 })}
+              >
+                <Image
+                  preview={false}
+                  width={width > 1024 ? 130 : width > 480 ? 44 : 40}
+                  height={width > 1024 ? 115 : width > 480 ? 65 : 60}
+                  alt={item.name}
+                  src={item.image}
+                  style={{
+                    backgroundColor: "antiquewhite",
+                    borderRadius: width > 1024 ? 20 : width > 480 ? 6 : 4,
+                    cursor: "pointer",
+                  }}
+                />
+                {Item({ item: item, fontSize: 14 })}
+              </div>
+              <Divider style={{ margin: 0 }} />
             </div>
-            <Divider style={{ margin: 0 }} />
-          </div>
-        ))}
-        {cartProducts.length > 0 && (
-          <span style={{ fontSize: 22, float: "right", marginRight: 20 }}>
-            Subtotal: <span style={{ fontWeight: "bold" }}>₹{total}</span>
-          </span>
-        )}
-      </Card>
+          ))}
+          {cartProducts.length > 0 && (
+            <span style={{ fontSize: 22, float: "right", marginRight: 20 }}>
+              Subtotal: <span style={{ fontWeight: "bold" }}>₹{total}</span>
+            </span>
+          )}
+        </Card>
+      )}
       <div style={{ display: "flex", flexDirection: "column" }}>
+        {width < 728 && (
+          <Card
+            title={
+              <h3 style={{ margin: 5 }}>
+                {cartProducts.length > 0
+                  ? "Shopping Cart"
+                  : "Your Cart is Empty"}
+              </h3>
+            }
+            style={{
+              width: (width * 80) / 100,
+              margin: 15,
+              height: total > 0 ? "100%" : 200,
+            }}
+            bodyStyle={{ padding: 10 }}
+          >
+            {cartProducts.map((item) => (
+              <div
+                style={{ backgroundColor: "white" }}
+                bodyStyle={{ padding: 6 }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    padding: 10,
+                    backgroundColor: "white",
+                  }}
+                >
+                  <Image
+                    preview={false}
+                    width={width > 1024 ? 130 : width > 480 ? 44 : 40}
+                    height={width > 1024 ? 115 : width > 480 ? 65 : 60}
+                    alt={item.name}
+                    src={item.image}
+                    style={{
+                      backgroundColor: "antiquewhite",
+                      borderRadius: width > 1024 ? 20 : width > 480 ? 6 : 4,
+                      cursor: "pointer",
+                    }}
+                  />
+                  {Item({ item: item, fontSize: 14 })}
+                </div>
+                <Divider style={{ margin: 0 }} />
+              </div>
+            ))}
+            {cartProducts.length > 0 && (
+              <span style={{ fontSize: 22, float: "right", marginRight: 20 }}>
+                Subtotal: <span style={{ fontWeight: "bold" }}>₹{total}</span>
+              </span>
+            )}
+          </Card>
+        )}
         <Card
           title={<h4 style={{ margin: 0 }}>Price Details</h4>}
           style={{
@@ -174,7 +233,7 @@ const Cart = () => {
             marginBottom: 10,
             marginLeft: 10,
             height: 280,
-            width: 450,
+            width: width < 728 ? (width * 80) / 100 : 480,
           }}
         >
           <span
@@ -223,7 +282,7 @@ const Cart = () => {
                 fontWeight: "bold",
                 fontSize: 18,
                 backgroundColor: "#001529",
-                width: "50%",
+                width: width < 728 ? (width * 70) / 100 : "50%",
                 alignSelf: "center",
                 marginTop: 10,
                 color: "antiquewhite",
@@ -241,8 +300,9 @@ const Cart = () => {
             margin: 15,
             marginBottom: 0,
             marginLeft: 10,
-            height: 550,
-            width: 450,
+            minHeight: 150,
+            width: width < 728 ? (width * 80) / 100 : 450,
+
             overflowY: "scroll",
             padding: 10,
             paddingTop: 0,
