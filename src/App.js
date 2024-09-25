@@ -114,13 +114,15 @@ const App = () => {
           }}
           visible={false}
           preview={false}
-          onClick={() => history.push("/")}
+          onClick={() => history.push("/Portfolio")}
         />
         {width > 1028 && (
           <div style={{ display: "flex" }}>
             {items.map((item) => (
               <Button
-                onClick={() => history.push({ pathname: `/${item.key}` })}
+                onClick={() =>
+                  history.push({ pathname: `/Portfolio/${item.key}` })
+                }
                 icon={
                   location.pathname === `/${item.key}`
                     ? item.selectedIcon
@@ -177,10 +179,10 @@ const App = () => {
           <Switch>
             {" "}
             {/* Use Switch for version 5 */}
-            <Route exact path="/" component={HomePage} />{" "}
+            <Route exact path="/Portfolio" component={HomePage} />{" "}
             {/* Use component prop */}
-            <Route exact path="/cart" component={CartComponent} />
-            <Route exact path="/products" component={ProductsList} />
+            <Route exact path="/Portfolio/cart" component={CartComponent} />
+            <Route exact path="/Portfolio/products" component={ProductsList} />
           </Switch>
         </Suspense>
       </Content>
@@ -202,7 +204,9 @@ const App = () => {
         >
           {items.map((item) => (
             <Button
-              onClick={() => history.push({ pathname: `/${item.key}` })}
+              onClick={() =>
+                history.push({ pathname: `/Portfolio/${item.key}` })
+              }
               type="link"
               icon={
                 location.pathname === `/${item.key}`

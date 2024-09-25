@@ -78,7 +78,7 @@ const HomePage = (props) => {
               alt={item.title}
               src={item.imageUrl}
               onClick={() =>
-                props.history.push(`/products?category=${item.key}`)
+                props.history.push(`/Portfolio/products?category=${item.key}`)
               }
               style={{
                 backgroundColor: "antiquewhite",
