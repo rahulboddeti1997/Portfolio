@@ -89,16 +89,16 @@ const HomePage = (props) => {
           ))}
         </div>
       ) : (
-        <div>
+        <div style={{ paddingRight: 20, paddingLeft: 20 }}>
           <div
             style={{
               margin: 0,
-              padding: 15,
+              padding: 20,
               borderRadius: 15,
               display: "flex",
               paddingLeft: 0,
               paddingRight: 0,
-              paddingBottom: 5,
+              paddingBottom: 10,
               marginTop: 5,
               backgroundColor: "antiquewhite",
               justifyContent: "space-between",
@@ -107,7 +107,7 @@ const HomePage = (props) => {
             {categoryItems.splice(0, 4).map((item) => (
               <Image
                 preview={false}
-                width={85}
+                width={100}
                 height={120}
                 alt={item.title}
                 onClick={() =>
@@ -125,6 +125,10 @@ const HomePage = (props) => {
             style={{
               margin: 0,
               borderRadius: 15,
+              padding: 20,
+              paddingLeft: 0,
+              paddingRight: 0,
+              paddingTop: 0,
               display: "flex",
               backgroundColor: "antiquewhite",
               justifyContent: "space-between",
@@ -133,7 +137,7 @@ const HomePage = (props) => {
             {categoryItems.map((item) => (
               <Image
                 preview={false}
-                width={85}
+                width={100}
                 height={120}
                 alt={item.title}
                 src={item.imageUrl}
