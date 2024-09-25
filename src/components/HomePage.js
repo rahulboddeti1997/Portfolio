@@ -110,6 +110,9 @@ const HomePage = (props) => {
                 width={80}
                 height={120}
                 alt={item.title}
+                onClick={() =>
+                  props.history.push(`/Portfolio/products?category=${item.key}`)
+                }
                 src={item.imageUrl}
                 style={{
                   backgroundColor: "antiquewhite",
@@ -134,6 +137,9 @@ const HomePage = (props) => {
                 height={120}
                 alt={item.title}
                 src={item.imageUrl}
+                onClick={() =>
+                  props.history.push(`/Portfolio/products?category=${item.key}`)
+                }
                 style={{
                   backgroundColor: "antiquewhite",
                   borderRadius: width > 480 ? 12 : 7,
