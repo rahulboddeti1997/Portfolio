@@ -179,7 +179,7 @@ const App = () => {
           <Switch>
             {" "}
             {/* Use Switch for version 5 */}
-            <Route exact path="/Portfolio" component={HomePage} />{" "}
+            <Route exact path="/Portfolio/" component={HomePage} />{" "}
             {/* Use component prop */}
             <Route exact path="/Portfolio/cart" component={CartComponent} />
             <Route exact path="/Portfolio/products" component={ProductsList} />
@@ -209,13 +209,15 @@ const App = () => {
               }
               type="link"
               icon={
-                location.pathname === `/${item.key}`
+                location.pathname === `/Portfolio/${item.key}`
                   ? item.selectedIcon
                   : item.icon
               }
               style={{
                 backgroundColor:
-                  location.pathname === `/${item.key}` ? "antiquewhite" : "",
+                  location.pathname === `/Portfolio/${item.key}`
+                    ? "antiquewhite"
+                    : "",
                 borderRadius: "40px",
                 width: 45,
                 height: 45,
