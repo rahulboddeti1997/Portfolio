@@ -44,7 +44,11 @@ const HomePage = (props) => {
             muted
           >
             <source
-              src={width > 780 ? "/saveTheDate2.mp4" : "/saveTheDateMob.mp4"}
+              src={
+                width > 780
+                  ? "/Portfolio/images/saveTheDate2.mp4"
+                  : "/Portfolio/images/saveTheDateMob.mp4"
+              }
               type="video/mp4"
             />
           </video>
@@ -103,8 +107,8 @@ const HomePage = (props) => {
             {categoryItems.splice(0, 4).map((item) => (
               <Image
                 preview={false}
-                width={90}
-                height={135}
+                width={83}
+                height={120}
                 alt={item.title}
                 src={item.imageUrl}
                 style={{
@@ -126,8 +130,8 @@ const HomePage = (props) => {
             {categoryItems.map((item) => (
               <Image
                 preview={false}
-                width={90}
-                height={135}
+                width={83}
+                height={120}
                 alt={item.title}
                 src={item.imageUrl}
                 style={{
