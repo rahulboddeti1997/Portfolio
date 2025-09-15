@@ -8,7 +8,7 @@ import React, { lazy, Suspense, useContext } from "react";
 import { Switch, Route, useHistory, useLocation } from "react-router-dom"; // Corrected import for useHistory
 import Loading from "./components/Loading";
 import { useWindowSize } from "./components/WindowSize";
-import { CartContext } from "./context/CartContext";
+import { useSelector } from "react-redux";
 
 const { Header, Content, Footer } = Layout;
 
@@ -76,10 +76,10 @@ const items = [
 ];
 
 const App = () => {
+  const products = useSelector((state) => state.products.products)
   const history = useHistory(); // Correct hook usage
   const location = useLocation();
   const [width] = useWindowSize();
-  const { products } = useContext(CartContext);
 
   const onChange = (e) => {
     history.push({ pathname: `/${e.key}` });
@@ -177,10 +177,7 @@ const App = () => {
       <Content>
         <Suspense fallback={<Loading minHeight="100vh" />}>
           <Switch>
-            {" "}
-            {/* Use Switch for version 5 */}
             <Route exact path="/Portfolio/" component={HomePage} />{" "}
-            {/* Use component prop */}
             <Route exact path="/Portfolio/cart" component={CartComponent} />
             <Route exact path="/Portfolio/products" component={ProductsList} />
           </Switch>

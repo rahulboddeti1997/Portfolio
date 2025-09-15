@@ -1,15 +1,16 @@
 import { HeartFilled } from "@ant-design/icons";
 import { Button, Card, Flex, Image, Tooltip } from "antd";
-import React, { useContext } from "react";
-import { CartContext } from "../context/CartContext";
 import { useWindowSize } from "./WindowSize";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { addToCart, addToWishlist, removeFromWishlist } from "../redux/productSlice";
 
 const { Meta } = Card;
 
 const ProductsList = (props) => {
+  const products = useSelector((state) => state.products.products)
   const [width] = useWindowSize();
-  const { savedItems, setSavedItems, products, setProducts } =
-    useContext(CartContext);
+  const dispatch = useDispatch();
   const mobileWidth =
     width > 768 ? 200 : width > 480 ? (width * 30) / 100 : (width * 50) / 100;
   return (
@@ -57,15 +58,7 @@ const ProductsList = (props) => {
                   />
                   {product.wishListed ? (
                     <Button
-                      onClick={() =>
-                        setProducts(
-                          products.map((item) =>
-                            item.id === product.id
-                              ? { ...item, wishListed: false }
-                              : item
-                          )
-                        )
-                      }
+                      onClick={() => dispatch(removeFromWishlist({id: product.id}))}
                       icon={<HeartFilled />}
                       type="primary"
                       style={{
@@ -82,15 +75,7 @@ const ProductsList = (props) => {
                     />
                   ) : (
                     <Button
-                      onClick={() =>
-                        setProducts(
-                          products.map((item) =>
-                            item.id === product.id
-                              ? { ...item, wishListed: true }
-                              : item
-                          )
-                        )
-                      }
+                      onClick={() => dispatch(addToWishlist({id: product.id}))}
                       icon={<HeartFilled />}
                       type="primary"
                       style={{
@@ -178,19 +163,7 @@ const ProductsList = (props) => {
               >
                 {!product.addedToCart ? (
                   <Button
-                    onClick={() =>
-                      setProducts(
-                        products.map((item) =>
-                          item.id === product.id
-                            ? {
-                                ...item,
-                                addedToCart: true,
-                                savedForLater: false,
-                              }
-                            : item
-                        )
-                      )
-                    }
+                    onClick={() => dispatch(addToCart({id: product.id}))}
                     type="primary"
                     style={{
                       borderRadius: 30,

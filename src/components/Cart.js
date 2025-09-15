@@ -1,12 +1,11 @@
 import { DoubleRightOutlined } from "@ant-design/icons";
 import { Button, Card, Divider, Image } from "antd";
-import React, { useContext } from "react";
-import { CartContext } from "../context/CartContext";
 import { useWindowSize } from "./WindowSize";
+import { useSelector } from "react-redux";
 
 const Cart = () => {
+  const products = useSelector((state) => state.products.products)
   const [width] = useWindowSize();
-  const { products, setProducts } = useContext(CartContext);
 
   const cartProducts = products.filter((i) => i.addedToCart === true);
   const total = cartProducts.reduce((acc, item) => acc + item.price, 0);
@@ -81,15 +80,15 @@ const Cart = () => {
         </span>
         {showButton && (
           <Button
-            onClick={() =>
-              setProducts(
-                products.map((i) =>
-                  item.id === i.id
-                    ? { ...i, addedToCart: true, savedForLater: false }
-                    : i
-                )
-              )
-            }
+            // onClick={() =>
+            //   setProducts(
+            //     products.map((i) =>
+            //       item.id === i.id
+            //         ? { ...i, addedToCart: true, savedForLater: false }
+            //         : i
+            //     )
+            //   )
+            // }
             type="primary"
             style={{
               borderRadius: 30,

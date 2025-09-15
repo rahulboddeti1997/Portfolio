@@ -1,12 +1,7 @@
-import React, { createContext, useState } from "react";
+import { createSlice } from '@reduxjs/toolkit'
 
-const CartContext = createContext();
-const { Provider } = CartContext;
-
-function CartProvider({ children, catalogs }) {
-  const [savedItems, setSavedItems] = useState([]);
-  const [cartItems, setCartItems] = useState([]);
-  const [products, setProducts] = useState([
+const initialState = {
+products : [
     {
       id: "1",
       name: "Printed White T-shirt",
@@ -67,22 +62,43 @@ function CartProvider({ children, catalogs }) {
       wishListed: false,
       category: "1",
     },
-  ]);
-
-  return (
-    <Provider
-      value={{
-        savedItems,
-        cartItems,
-        setCartItems,
-        setSavedItems,
-        products,
-        setProducts,
-      }}
-    >
-      {children}
-    </Provider>
-  );
+  ]
 }
 
-export { CartContext, CartProvider };
+const productsSlice = createSlice({
+    name: 'products',
+    initialState,
+    reducers: {
+        addToCart: (state, action) => {
+            state.products.map(item => {
+              if(item.id === action.payload.id) {
+                item.addedToCart = true
+              }
+          });
+        },
+        removeFromCart: (state, action) => {
+            state.products.map(item => {
+              if(item.id === action.payload.id) {
+                item.addedToCart = false
+              }
+          });
+        },
+        addToWishlist: (state, action) => {
+            state.products.map(item => {
+              if(item.id === action.payload.id) {
+                item.wishListed = true
+              }
+          });
+        },
+        removeFromWishlist: (state, action) => {
+            state.products.map(item => {
+              if(item.id === action.payload.id) {
+                item.wishListed = false
+              }
+          });
+        }
+    }
+})
+
+export const {addToCart, removeFromCart, addToWishlist, removeFromWishlist} = productsSlice.actions;
+export default productsSlice.reducer;
