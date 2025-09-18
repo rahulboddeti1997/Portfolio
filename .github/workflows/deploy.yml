@@ -3,11 +3,14 @@ name: Deploy React App to GitHub Pages
 on:
   push:
     branches:
-      - main   # whenever you push to main, it will deploy
+      - main   
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
+    permissions:          
+      contents: write
 
     steps:
       - name: Checkout code
@@ -29,3 +32,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build
+          cname: hira.live   
