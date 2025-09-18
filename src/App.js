@@ -42,7 +42,7 @@ const items = [
     label: "Garments",
     icon: (
       <Image
-        src={"/Portfolio/images/clothesLogo.svg"}
+        src={"/images/clothesLogo.svg"}
         alt="logo"
         preview={false}
         width={28}
@@ -50,7 +50,7 @@ const items = [
     ),
     selectedIcon: (
       <Image
-        src={"/Portfolio/images/clothesLogoRev.svg"}
+        src={"/images/clothesLogoRev.svg"}
         alt="logo"
         preview={false}
         width={28}
@@ -106,7 +106,7 @@ const App = () => {
         }}
       >
         <Image
-          src={"/Portfolio/images/Logo.svg"}
+          src={"/images/Logo.svg"}
           alt="logo"
           style={{
             width: width > 728 ? 90 : 110,

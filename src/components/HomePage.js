@@ -11,8 +11,8 @@ const HomePage = (props) => {
     description: `www.instagram.com/${index + 1}`,
     imageUrl:
       width > 780
-        ? `/Portfolio/images/${index + 1}.svg`
-        : `/Portfolio/images/${index + 1}Mob.svg`,
+        ? `/images/${index + 1}.svg`
+        : `/images/${index + 1}Mob.svg`,
   }));
 
   const itemsCount = width > 1024 ? 8 : width > 480 ? 4 : 2;
@@ -46,8 +46,8 @@ const HomePage = (props) => {
             <source
               src={
                 width > 780
-                  ? "/Portfolio/images/saveTheDate2.mp4"
-                  : "/Portfolio/images/saveTheDateMob.mp4"
+                  ? "/images/saveTheDate2.mp4"
+                  : "/images/saveTheDateMob.mp4"
               }
               type="video/mp4"
             />
@@ -164,8 +164,8 @@ const HomePage = (props) => {
         }}
         src={
           width > 780
-            ? "/Portfolio/images/saveTheDate.svg"
-            : "/Portfolio/images/saveTheDateMob.svg"
+            ? "/images/saveTheDate.svg"
+            : "/images/saveTheDateMob.svg"
         }
       />
     </div>
