@@ -1,0 +1,13 @@
+[
+  {
+    "name": "react-app",
+    "image": "931703616951.dkr.ecr.us-east-1.amazonaws.com/react-app:latest",
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 80,
+        "protocol": "tcp"
+      }
+    ]
+  }
+]
