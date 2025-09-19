@@ -180,7 +180,7 @@ const ProductsList = (props) => {
                 ) : (
                   <Button
                     onClick={() => {
-                      props.history.push("/cart");
+                      props.history.push("/Portfolio/cart");
                     }}
                     type="primary"
                     style={{

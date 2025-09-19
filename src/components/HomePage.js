@@ -78,7 +78,7 @@ const HomePage = (props) => {
               alt={item.title}
               src={item.imageUrl}
               onClick={() =>
-                props.history.push(`/products?category=${item.key}`)
+                props.history.push(`/Portfolio/products?category=${item.key}`)
               }
               style={{
                 backgroundColor: "antiquewhite",
@@ -111,7 +111,7 @@ const HomePage = (props) => {
                 height={120}
                 alt={item.title}
                 onClick={() =>
-                  props.history.push(`/products?category=${item.key}`)
+                  props.history.push(`/Portfolio/products?category=${item.key}`)
                 }
                 src={item.imageUrl}
                 style={{
@@ -142,7 +142,7 @@ const HomePage = (props) => {
                 alt={item.title}
                 src={item.imageUrl}
                 onClick={() =>
-                  props.history.push(`/products?category=${item.key}`)
+                  props.history.push(`/Portfolio/products?category=${item.key}`)
                 }
                 style={{
                   backgroundColor: "antiquewhite",
