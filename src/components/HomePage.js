@@ -1,173 +1,76 @@
-import { Carousel, Image } from "antd";
-import React, { useEffect, useRef } from "react";
-import { useWindowSize } from "./WindowSize";
+import { Carousel } from "antd";
 
 const HomePage = (props) => {
-  const [width] = useWindowSize();
 
-  const carouselItems = Array.from({ length: 10 }, (_, index) => ({
+  const carouselItems = Array.from({ length: 8 }, (_, index) => ({
     key: index + 1,
     title: `Card ${index + 1}`,
-    description: `www.instagram.com/${index + 1}`,
-    imageUrl:
-      width > 780
-        ? `/images/${index + 1}.svg`
-        : `/images/${index + 1}Mob.svg`,
+    baseName: index + 1,
   }));
-
-  const itemsCount = width > 1024 ? 8 : width > 480 ? 4 : 2;
-  const groupedItems = [];
-  const categoryItems = carouselItems.slice(0, 8);
-  for (let i = 0; i < carouselItems.length; i += itemsCount) {
-    groupedItems.push(carouselItems.slice(i, i + itemsCount));
-  }
-
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play();
-    }
-  }, []);
 
   return (
     <div style={{ margin: 20 }}>
       <Carousel effect="fade" autoplaySpeed={4500}>
-        <div style={{ borderRadius: 10 }}>
+        <div className="rounded-[10px]">
           <video
-            ref={videoRef}
-            style={{ borderRadius: 10 }}
-            width="100%"
             autoPlay
             loop
-            height="100%"
             muted
+            playsInline
+            className="w-full h-full rounded-lg"
           >
             <source
-              src={
-                width > 780
-                  ? "/images/saveTheDate2.mp4"
-                  : "/images/saveTheDateMob.mp4"
-              }
+              src="/images/saveTheDateMob.mp4"
               type="video/mp4"
+              media="(max-width: 767px)"
+            />
+            <source
+              src="/images/saveTheDate2.mp4"
+              type="video/mp4"
+              media="(min-width: 768px)"
             />
           </video>
         </div>
       </Carousel>
-      {width > 780 ? (
-        <div
-          className="imgCard"
-          style={{
-            margin: 0,
-            padding: 15,
-            borderRadius: 15,
-            marginTop: 15,
-            display: "flex",
-            paddingLeft: 0,
-            paddingRight: 0,
-
-            backgroundColor: "antiquewhite",
-            justifyContent: "space-between",
-          }}
-        >
-          {categoryItems.map((item) => (
-            <Image
-              preview={false}
-              width={width > 1024 ? 183 : width > 480 ? 44 : 40}
-              height={width > 1024 ? 275 : width > 480 ? 65 : 60}
-              alt={item.title}
-              src={item.imageUrl}
-              onClick={() =>
-                props.history.push(`/Portfolio/products?category=${item.key}`)
-              }
-              style={{
-                backgroundColor: "antiquewhite",
-                borderRadius: width > 1024 ? 15 : width > 480 ? 6 : 4,
-                cursor: "pointer",
-              }}
-            />
-          ))}
-        </div>
-      ) : (
-        <div style={{ paddingRight: 20, paddingLeft: 20 }}>
-          <div
-            style={{
-              margin: 0,
-              padding: 20,
-              borderRadius: 15,
-              display: "flex",
-              paddingLeft: 0,
-              paddingRight: 0,
-              paddingBottom: 5,
-              marginTop: 5,
-              backgroundColor: "antiquewhite",
-              justifyContent: "space-between",
-            }}
+      <div className="grid grid-cols-4 lg:grid-cols-8 gap-4 mt-6 p-4 rounded-2xl bg-[#faebd7]">
+        {carouselItems.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            onClick={() =>
+              props.history.push(`/products?category=${item.key}`)
+            }
+            className="aspect-[2/3] flex items-center justify-center rounded-lg bg-[#faebd7]"
           >
-            {categoryItems.splice(0, 4).map((item) => (
-              <Image
-                preview={false}
-                width={100}
-                height={120}
-                alt={item.title}
-                onClick={() =>
-                  props.history.push(`/Portfolio/products?category=${item.key}`)
-                }
-                src={item.imageUrl}
-                style={{
-                  backgroundColor: "antiquewhite",
-                  borderRadius: width > 480 ? 12 : 7,
-                }}
+            <picture>
+              <source
+                srcSet={`/images/${item.baseName}Mob.svg`}
+                media="(max-width: 767px)"
               />
-            ))}
-          </div>
-          <div
-            style={{
-              margin: 0,
-              borderRadius: 15,
-              padding: 20,
-              paddingLeft: 0,
-              paddingRight: 0,
-              paddingTop: 0,
-              display: "flex",
-              backgroundColor: "antiquewhite",
-              justifyContent: "space-between",
-            }}
-          >
-            {categoryItems.map((item) => (
-              <Image
-                preview={false}
-                width={100}
-                height={120}
+              <img
+                src={`/images/${item.baseName}.svg`}
                 alt={item.title}
-                src={item.imageUrl}
-                onClick={() =>
-                  props.history.push(`/Portfolio/products?category=${item.key}`)
-                }
-                style={{
-                  backgroundColor: "antiquewhite",
-                  borderRadius: width > 480 ? 12 : 7,
-                }}
+                className="w-full h-full object-contain rounded-2xl"
               />
-            ))}
-          </div>
-        </div>
-      )}
-      <Image
-        preview={false}
-        width={"100%"}
-        height={"100%"}
-        style={{
-          borderRadius: "10px 10px 10px 10px",
-          marginTop: 25,
-          marginBottom: 20,
-        }}
-        src={
-          width > 780
-            ? "/images/saveTheDate.svg"
-            : "/images/saveTheDateMob.svg"
-        }
-      />
+            </picture>
+          </button>
+        ))}
+      </div>
+      <picture>
+        <source
+          srcSet="/images/saveTheDateMob.svg"
+          media="(max-width: 767px)"
+        />
+        <source
+          srcSet="/images/saveTheDate.svg"
+          media="(min-width: 768px)"
+        />
+        <img
+          src="/images/saveTheDate.svg"
+          alt="Save The Date"
+          className="w-full h-auto rounded-lg mt-6 mb-5"
+        />
+      </picture>
     </div>
   );
 };

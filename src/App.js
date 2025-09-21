@@ -3,11 +3,10 @@ import {
   ShoppingCartOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Button, Image, Layout } from "antd";
+import { Button, Image, Input, Layout } from "antd";
 import React, { lazy, Suspense, useContext } from "react";
 import { Switch, Route, useHistory, useLocation } from "react-router-dom"; // Corrected import for useHistory
 import Loading from "./components/Loading";
-import { useWindowSize } from "./components/WindowSize";
 import { useSelector } from "react-redux";
 
 const { Header, Content, Footer } = Layout;
@@ -21,20 +20,10 @@ const items = [
     key: "",
     label: "Home",
     icon: (
-      <HomeFilled
-        style={{
-          color: "antiquewhite",
-          fontSize: 25,
-        }}
-      />
+      <HomeFilled className="text-[#faebd7] text-2xl" />
     ),
     selectedIcon: (
-      <HomeFilled
-        style={{
-          color: "#001529",
-          fontSize: 25,
-        }}
-      />
+      <HomeFilled className="text-[#001529] text-2xl" />
     ),
   },
   {
@@ -61,17 +50,17 @@ const items = [
     key: "cart",
     label: "Cart",
     icon: (
-      <ShoppingCartOutlined style={{ color: "antiquewhite", fontSize: 25 }} />
+      <ShoppingCartOutlined className="text-[#faebd7] text-2xl"  />
     ),
     selectedIcon: (
-      <ShoppingCartOutlined style={{ color: "#001529", fontSize: 25 }} />
+      <ShoppingCartOutlined className="text-[#001529] text-2xl" />
     ),
   },
   {
     key: "account",
     label: "Account",
-    icon: <UserOutlined style={{ color: "antiquewhite", fontSize: 25 }} />,
-    selectedIcon: <UserOutlined style={{ color: "#001529", fontSize: 25 }} />,
+    icon: <UserOutlined className="text-[#faebd7] text-2xl"  />,
+    selectedIcon: <UserOutlined className="text-[#001529] text-2xl" />,
   },
 ];
 
@@ -79,152 +68,91 @@ const App = () => {
   const products = useSelector((state) => state.products.products)
   const history = useHistory(); // Correct hook usage
   const location = useLocation();
-  const [width] = useWindowSize();
-
-  const onChange = (e) => {
-    history.push({ pathname: `/${e.key}` });
-    localStorage.setItem("selectedKey", [e.key]);
-  };
-
-  const getActiveKey = () => {
-    return localStorage.getItem("selectedKey");
-  };
 
   return (
-    <Layout
-      style={{
-        backgroundColor: "antiquewhite",
-        minHeight: "100vh",
-        height: width > 1028 ? "100%" : "100vh",
-      }}
-    >
-      <Header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: width > 728 ? "space-between" : "center",
-        }}
-      >
-        <Image
+    <Layout className="bg-[antiquewhite] min-h-screen" >
+      <Header className="flex items-center justify-center lg:justify-between" >
+        <img
           src={"/images/Logo.svg"}
           alt="logo"
-          style={{
-            width: width > 728 ? 90 : 110,
-            height: width > 728 ? 110 : 130,
-          }}
-          visible={false}
-          preview={false}
-          onClick={() => history.push("/Portfolio")}
+          className="cursor-pointer w-[120px] h-[120px] lg:w-[90px] lg:h-[110px]"
+          onClick={() => history.push("/")}
         />
-        {width > 1028 && (
-          <div style={{ display: "flex" }}>
-            {items.map((item) => (
-              <Button
-                onClick={() =>
-                  history.push({ pathname: `/Portfolio/${item.key}` })
-                }
-                icon={
-                  location.pathname === `/Portfolio/${item.key}`
-                    ? item.selectedIcon
-                    : item.icon
-                }
-                style={{
-                  backgroundColor:
-                    location.pathname === `/Portfolio/${item.key}`
-                      ? "antiquewhite"
-                      : "#001529",
-                  borderRadius: "40px",
-                  width: 130,
-                  height: 40,
-                  marginRight: 60,
-                  color:
-                    location.pathname === `/Portfolio/${item.key}`
-                      ? "#001529"
-                      : "antiquewhite",
-                  fontWeight: "bold",
-                  alignItems: "center",
-                }}
-              >
-                {item.label}{" "}
-                {item.key === "cart" && (
-                  <span
-                    style={{
-                      border: "solid 1px ",
-                      width: 50,
-                      height: 24,
-                      alignItems: "center",
-                      backgroundColor:
-                        location.pathname === `/Portfolio/${item.key}`
-                          ? "#001529"
-                          : "antiquewhite",
-                      color:
-                        location.pathname === `/Portfolio/${item.key}`
-                          ? "white"
-                          : "#001529",
-                      borderRadius: 20,
-                      fontSize: 14,
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {products.filter((i) => i.addedToCart).length}
-                  </span>
-                )}
-              </Button>
-            ))}
-          </div>
-        )}
+        <Input className="rounded-3xl w-[600px] h-[40px] hidden lg:block" placeholder="Search for the products..." />
+        <div className="hidden lg:flex gap-12" >
+          {items.map((item) => (
+            <Button
+              onClick={() =>
+                history.push({ pathname: `/${item.key}` })
+              }
+              icon={
+                location.pathname === `/${item.key}`
+                  ? item.selectedIcon
+                  : item.icon
+              }
+              className={`rounded-[40px] w-[130px] h-[40px] m-r-[60px] items-center font-bold ${location.pathname === `/${item.key}`
+                      ? "bg-[antiquewhite] text-[#001529]"
+                      : "bg-[#001529] text-[#faebd7]"}`}
+            >
+              {item.label}
+              {item.key === "cart" && (
+                <span
+                  className={`
+                w-[50px] h-[24px] 
+                flex items-center justify-center 
+                rounded-[20px] 
+                border border-solid
+                text-[14px] font-bold
+                ${location.pathname === `/Portfolio/${item.key}`
+                      ? "bg-[#001529] text-white border-[#001529]"
+                      : "bg-[#faebd7] text-[#001529] border-[#001529]"}
+              `}
+                >
+                  {products.filter((i) => i.addedToCart).length}
+                </span>
+              )}
+            </Button>
+          ))}
+        </div>
       </Header>
       <Content>
         <Suspense fallback={<Loading minHeight="100vh" />}>
           <Switch>
-            <Route exact path="/Portfolio/" component={HomePage} />{" "}
-            <Route exact path="/Portfolio/cart" component={CartComponent} />
-            <Route exact path="/Portfolio/products" component={ProductsList} />
+            <Route exact path="/" component={HomePage} />{" "}
+            <Route exact path="/cart" component={CartComponent} />
+            <Route exact path="/products" component={ProductsList} />
           </Switch>
         </Suspense>
       </Content>
-      {width > 728 ? (
-        <Footer style={{ textAlign: "center" }}>
+        {/* <Footer className="hidden md:block text-center">
           Hira ©{new Date().getFullYear()} Created by Hira
-        </Footer>
-      ) : (
-        <Footer
-          style={{
-            backgroundColor: "#001529",
-            borderRadius: "15px 15px 0px 0px",
-            display: "flex",
-            justifyContent: "space-between",
-            zIndex: 1,
-            height: 50,
-            paddingBottom: 65,
-            marginTop: 30,
-          }}
-        >
+        </Footer> */}
+        <Footer className="block lg:hidden bg-[#001529] rounded-t-[15px] flex justify-between z-[1] h-[50px] pb-[65px] mt-[30px]">
           {items.map((item) => (
             <Button
               onClick={() =>
-                history.push({ pathname: `/Portfolio/${item.key}` })
+                history.push({ pathname: `/${item.key}` })
               }
               type="link"
               icon={
-                location.pathname === `/Portfolio/${item.key}`
+                location.pathname === `/${item.key}`
                   ? item.selectedIcon
                   : item.icon
               }
+                      className={`
+          !w-[45px] !h-[45px] 
+          flex items-center justify-center 
+          rounded-[40px] 
+        `}
               style={{
                 backgroundColor:
-                  location.pathname === `/Portfolio/${item.key}`
+                  location.pathname === `/${item.key}`
                     ? "antiquewhite"
                     : "",
-                borderRadius: "40px",
-                width: 45,
-                height: 45,
-                alignItems: "center",
               }}
             />
           ))}
         </Footer>
-      )}
     </Layout>
   );
 };
