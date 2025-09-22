@@ -1,25 +1,25 @@
 {
   "files": {
-    "main.css": "./static/css/main.ebcf8e2b.css",
-    "main.js": "./static/js/main.6aefe120.js",
-    "static/js/362.3fd11d2a.chunk.js": "./static/js/362.3fd11d2a.chunk.js",
+    "main.css": "./static/css/main.a2da84fd.css",
+    "main.js": "./static/js/main.4705aed5.js",
+    "static/js/349.a0c2fada.chunk.js": "./static/js/349.a0c2fada.chunk.js",
     "static/js/165.66d89b2b.chunk.js": "./static/js/165.66d89b2b.chunk.js",
-    "static/js/522.58885447.chunk.js": "./static/js/522.58885447.chunk.js",
+    "static/js/522.e8f24f07.chunk.js": "./static/js/522.e8f24f07.chunk.js",
     "static/js/453.13895557.chunk.js": "./static/js/453.13895557.chunk.js",
-    "static/js/195.db75163b.chunk.js": "./static/js/195.db75163b.chunk.js",
+    "static/js/195.5ebdfa98.chunk.js": "./static/js/195.5ebdfa98.chunk.js",
     "static/js/938.4af14756.chunk.js": "./static/js/938.4af14756.chunk.js",
     "index.html": "./index.html",
-    "main.ebcf8e2b.css.map": "./static/css/main.ebcf8e2b.css.map",
-    "main.6aefe120.js.map": "./static/js/main.6aefe120.js.map",
-    "362.3fd11d2a.chunk.js.map": "./static/js/362.3fd11d2a.chunk.js.map",
+    "main.a2da84fd.css.map": "./static/css/main.a2da84fd.css.map",
+    "main.4705aed5.js.map": "./static/js/main.4705aed5.js.map",
+    "349.a0c2fada.chunk.js.map": "./static/js/349.a0c2fada.chunk.js.map",
     "165.66d89b2b.chunk.js.map": "./static/js/165.66d89b2b.chunk.js.map",
-    "522.58885447.chunk.js.map": "./static/js/522.58885447.chunk.js.map",
+    "522.e8f24f07.chunk.js.map": "./static/js/522.e8f24f07.chunk.js.map",
     "453.13895557.chunk.js.map": "./static/js/453.13895557.chunk.js.map",
-    "195.db75163b.chunk.js.map": "./static/js/195.db75163b.chunk.js.map",
+    "195.5ebdfa98.chunk.js.map": "./static/js/195.5ebdfa98.chunk.js.map",
     "938.4af14756.chunk.js.map": "./static/js/938.4af14756.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.ebcf8e2b.css",
-    "static/js/main.6aefe120.js"
+    "static/css/main.a2da84fd.css",
+    "static/js/main.4705aed5.js"
   ]
 }
