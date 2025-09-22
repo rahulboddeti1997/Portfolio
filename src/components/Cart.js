@@ -182,8 +182,6 @@ const Cart = () => {
               </h3>
             }
             style={{
-              width: (width * 80) / 100,
-              margin: 15,
               height: total > 0 ? "100%" : 200,
             }}
             bodyStyle={{ padding: 10 }}
