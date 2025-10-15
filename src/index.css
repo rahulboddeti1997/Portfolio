@@ -15,3 +15,36 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Performance optimizations for smooth scrolling */
+.product-card {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Search dropdown styling */
+.search-dropdown .ant-select-item {
+  padding: 8px 12px !important;
+}
+
+.search-dropdown .ant-select-item:hover {
+  background-color: #f5f5f5 !important;
+}
+
+.search-dropdown .ant-select-item-option-active {
+  background-color: #e6f7ff !important;
+}
+
+/* Search input placeholder spacing - more specific targeting */
+.ant-input-affix-wrapper .ant-input {
+  padding-left: 16px !important;
+}
+
+.ant-input-affix-wrapper .ant-input-prefix {
+  margin-right: 12px !important;
+}
+
+.ant-input-affix-wrapper .ant-input::placeholder {
+  padding-left: 8px !important;
+}

@@ -1,341 +1,368 @@
-import { DoubleRightOutlined } from "@ant-design/icons";
-import { Button, Card, Divider, Image } from "antd";
-import { useWindowSize } from "./WindowSize";
-import { useSelector } from "react-redux";
+import { DoubleRightOutlined, DeleteOutlined, HeartOutlined, MinusOutlined, PlusOutlined } from "@ant-design/icons";
+import { Button, Card, Divider, Image, message } from "antd";
+import { useSelector, useDispatch } from "react-redux";
+import { removeFromCart, updateQuantity, addToWishlist } from "../redux/productSlice";
 
 const Cart = () => {
-  const products = useSelector((state) => state.products.products)
-  const [width] = useWindowSize();
+  const products = useSelector((state) => state.products.products);
+  const dispatch = useDispatch();
 
   const cartProducts = products.filter((i) => i.addedToCart === true);
-  const total = cartProducts.reduce((acc, item) => acc + item.price, 0);
-  const totalMrp = cartProducts.reduce((acc, item) => acc + item.mrp, 0);
+  const total = cartProducts.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
+  const totalMrp = cartProducts.reduce((acc, item) => acc + (item.mrp * (item.quantity || 1)), 0);
   const savedProducts = products.filter((i) => i.savedForLater === true);
-  const avgDiscount = cartProducts.reduce(
-    (acc, item) => acc + (item.mrp - item.price),
-    0
-  );
-  const itemStyle = {
-    display: "flex",
-    justifyContent: "space-between",
-    width: "100%",
-    padding: "5px 10px", // Adds padding to the container
+  const totalDiscount = totalMrp - total;
+  const deliveryCharges = total > 499 ? 0 : 50;
+  const finalTotal = total + deliveryCharges;
+
+  const handleRemoveItem = (id) => {
+    dispatch(removeFromCart({ id }));
+    message.success('Item removed from cart');
   };
 
-  const nameStyle = {
-    fontSize: 14,
-    fontWeight: "bold",
-    marginLeft: 10,
-    whiteSpace: "nowrap", // Prevents wrapping of text
+  const handleMoveToWishlist = (id) => {
+    dispatch(removeFromCart({ id }));
+    dispatch(addToWishlist({ id }));
+    message.success('Item moved to wishlist');
   };
 
-  const priceContainerStyle = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
+  const handleQuantityChange = (id, quantity) => {
+    if (quantity > 0) {
+      dispatch(updateQuantity({ id, quantity }));
+    }
   };
 
-  const discountPriceStyle = {
-    display: "flex",
-    alignItems: "center", // Centers discount and price on the same line
-    marginBottom: 5, // Adds space below discount and price
-  };
-
-  const discountStyle = {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "white",
-    marginRight: 5,
-    backgroundColor: "red",
-    padding: "2px 5px",
-    borderRadius: 5,
-  };
-
-  const priceStyle = {
-    fontSize: 18,
-    fontWeight: 600,
-  };
-
-  const mrpStyle = {
-    fontSize: 10,
-    marginLeft: 4,
-  };
-
-  const strikeThroughStyle = {
-    fontSize: 12,
-    textDecoration: "line-through",
-  };
-
-  const Item = ({ item, fontSize, showButton }) => (
-    <div style={itemStyle}>
-      <div style={{ ...nameStyle, fontSize: fontSize }}>{item.name}</div>
-      <div style={priceContainerStyle}>
-        <div style={discountPriceStyle}>
-          <span style={discountStyle}>{item.discount}%</span>
-          <span style={priceStyle}>₹{item.price}.00</span>
+  const CartItem = ({ item }) => (
+    <div className="bg-white border-b border-gray-100 p-3 sm:p-6 hover:bg-gray-50 transition-colors duration-200">
+      {/* Mobile Layout */}
+      <div className="sm:hidden">
+        <div className="flex gap-3 mb-3">
+          {/* Product Image - Mobile */}
+          <div className="flex-shrink-0">
+            <div className="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+              <Image
+                preview={false}
+                src={item.image_url || item.image || `/images/${item.id}.svg`}
+                alt={item.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+          
+          {/* Product Info - Mobile */}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+              {item.name}
+            </h3>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-base font-bold text-gray-900">
+                ₹{item.price}
+              </span>
+              <span className="text-xs text-gray-500 line-through">
+                ₹{item.mrp}
+              </span>
+              <span className="text-xs font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
+                {item.discount}% OFF
+              </span>
+            </div>
+          </div>
         </div>
-        <span style={mrpStyle}>
-          M.R.P: <span style={{ fontSize: fontSize }}>₹</span>
-          <span style={strikeThroughStyle}>{item.mrp}.00</span>
-        </span>
-        {showButton && (
-          <Button
-            // onClick={() =>
-            //   setProducts(
-            //     products.map((i) =>
-            //       item.id === i.id
-            //         ? { ...i, addedToCart: true, savedForLater: false }
-            //         : i
-            //     )
-            //   )
-            // }
-            type="primary"
-            style={{
-              borderRadius: 30,
-              color: "#001529",
-              backgroundColor: "white",
-              border: "1px solid #001529",
-              marginLeft: 10,
-              marginTop: 10,
-              fontWeight: "bold",
-              width: "90%",
-              fontSize: 11,
-              height: 22,
-            }}
-          >
-            Move To Card
-          </Button>
-        )}
+
+        {/* Mobile Actions Row */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          {/* Quantity Controls - Mobile */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-600 font-medium">Qty:</span>
+            <div className="flex items-center border border-gray-300 rounded-md">
+              <Button
+                size="small"
+                icon={<MinusOutlined />}
+                onClick={() => handleQuantityChange(item.id, (item.quantity || 1) - 1)}
+                className="border-0 hover:bg-gray-100 w-8 h-8 flex items-center justify-center"
+                disabled={(item.quantity || 1) <= 1}
+              />
+              <span className="px-2 py-1 min-w-[32px] text-center text-sm border-x border-gray-300">
+                {item.quantity || 1}
+              </span>
+              <Button
+                size="small"
+                icon={<PlusOutlined />}
+                onClick={() => handleQuantityChange(item.id, (item.quantity || 1) + 1)}
+                className="border-0 hover:bg-gray-100 w-8 h-8 flex items-center justify-center"
+                disabled={(item.quantity || 1) >= 10}
+              />
+            </div>
+          </div>
+
+          {/* Action Buttons - Mobile */}
+          <div className="flex gap-1">
+            <Button
+              size="small"
+              icon={<HeartOutlined />}
+              onClick={() => handleMoveToWishlist(item.id)}
+              className="text-gray-600 hover:text-red-500 border-gray-300 w-8 h-8 flex items-center justify-center p-0"
+            />
+            <Button
+              size="small"
+              icon={<DeleteOutlined />}
+              onClick={() => handleRemoveItem(item.id)}
+              className="text-gray-600 hover:text-red-500 border-gray-300 w-8 h-8 flex items-center justify-center p-0"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Layout - Unchanged */}
+      <div className="hidden sm:flex gap-4">
+        {/* Product Image - Desktop */}
+        <div className="flex-shrink-0">
+          <div className="w-28 h-28 md:w-32 md:h-32 bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+            <Image
+              preview={false}
+              src={item.image_url || item.image || `/images/${item.id}.svg`}
+              alt={item.name}
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+            />
+          </div>
+        </div>
+
+        {/* Product Details - Desktop */}
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
+            <div className="flex-1">
+              <h3 className="text-sm md:text-base font-medium text-gray-900 line-clamp-2 mb-2">
+                {item.name}
+              </h3>
+              
+              {/* Price Section - Desktop */}
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg md:text-xl font-bold text-gray-900">
+                  ₹{item.price}
+                </span>
+                <span className="text-sm text-gray-500 line-through">
+                  ₹{item.mrp}
+                </span>
+                <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded">
+                  {item.discount}% OFF
+                </span>
+              </div>
+
+              {/* Quantity and Actions - Desktop */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center border border-gray-300 rounded-lg">
+                    <Button
+                      size="small"
+                      icon={<MinusOutlined />}
+                      onClick={() => handleQuantityChange(item.id, (item.quantity || 1) - 1)}
+                      className="border-0 hover:bg-gray-100"
+                      disabled={(item.quantity || 1) <= 1}
+                    />
+                    <span className="px-3 py-1 min-w-[40px] text-center border-x border-gray-300">
+                      {item.quantity || 1}
+                    </span>
+                    <Button
+                      size="small"
+                      icon={<PlusOutlined />}
+                      onClick={() => handleQuantityChange(item.id, (item.quantity || 1) + 1)}
+                      className="border-0 hover:bg-gray-100"
+                      disabled={(item.quantity || 1) >= 10}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-500">
+                    (Max 10)
+                  </span>
+                </div>
+
+                {/* Action Buttons - Desktop */}
+                <div className="flex gap-2">
+                  <Button
+                    size="small"
+                    icon={<HeartOutlined />}
+                    onClick={() => handleMoveToWishlist(item.id)}
+                    className="text-gray-600 hover:text-red-500 border-gray-300"
+                  >
+                    <span className="hidden sm:inline">Save</span>
+                  </Button>
+                  <Button
+                    size="small"
+                    icon={<DeleteOutlined />}
+                    onClick={() => handleRemoveItem(item.id)}
+                    className="text-gray-600 hover:text-red-500 border-gray-300"
+                  >
+                    <span className="hidden sm:inline">Remove</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        marginBottom: 100,
-        marginTop: 30,
-        overflow: "scroll",
-      }}
-    >
-      {width > 728 && (
-        <Card
-          title={
-            <h3 style={{ margin: 5 }}>
-              {cartProducts.length > 0 ? "Shopping Cart" : "Your Cart is Empty"}
-            </h3>
-          }
-          style={{
-            width: 800,
-            margin: 15,
-            height: total > 0 ? "100%" : 200,
-          }}
-          bodyStyle={{ padding: 10 }}
-        >
-          {cartProducts.map((item) => (
-            <div
-              style={{ backgroundColor: "white" }}
-              bodyStyle={{ padding: 6 }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  padding: 10,
-                  backgroundColor: "white",
-                }}
-              >
-                <Image
-                  preview={false}
-                  width={width > 1024 ? 130 : width > 480 ? 44 : 40}
-                  height={width > 1024 ? 115 : width > 480 ? 65 : 60}
-                  alt={item.name}
-                  src={item.image}
-                  style={{
-                    backgroundColor: "antiquewhite",
-                    borderRadius: width > 1024 ? 20 : width > 480 ? 6 : 4,
-                    cursor: "pointer",
-                  }}
-                />
-                {Item({ item: item, fontSize: 14 })}
-              </div>
-              <Divider style={{ margin: 0 }} />
-            </div>
-          ))}
-          {cartProducts.length > 0 && (
-            <span style={{ fontSize: 22, float: "right", marginRight: 20 }}>
-              Subtotal: <span style={{ fontWeight: "bold" }}>₹{total}</span>
-            </span>
-          )}
-        </Card>
-      )}
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        {width < 728 && (
-          <Card
-            title={
-              <h3 style={{ margin: 5 }}>
-                {cartProducts.length > 0
-                  ? "Shopping Cart"
-                  : "Your Cart is Empty"}
-              </h3>
-            }
-            style={{
-              height: total > 0 ? "100%" : 200,
-            }}
-            bodyStyle={{ padding: 10 }}
-          >
-            {cartProducts.map((item) => (
-              <div
-                style={{ backgroundColor: "white" }}
-                bodyStyle={{ padding: 6 }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    padding: 10,
-                    backgroundColor: "white",
-                  }}
-                >
-                  <Image
-                    preview={false}
-                    width={width > 1024 ? 130 : width > 480 ? 44 : 40}
-                    height={width > 1024 ? 115 : width > 480 ? 65 : 60}
-                    alt={item.name}
-                    src={item.image}
-                    style={{
-                      backgroundColor: "antiquewhite",
-                      borderRadius: width > 1024 ? 20 : width > 480 ? 6 : 4,
-                      cursor: "pointer",
-                    }}
-                  />
-                  {Item({ item: item, fontSize: 14 })}
-                </div>
-                <Divider style={{ margin: 0 }} />
-              </div>
-            ))}
-            {cartProducts.length > 0 && (
-              <span style={{ fontSize: 22, float: "right", marginRight: 20 }}>
-                Subtotal: <span style={{ fontWeight: "bold" }}>₹{total}</span>
-              </span>
-            )}
-          </Card>
-        )}
-        <Card
-          title={<h4 style={{ margin: 0 }}>Price Details</h4>}
-          style={{
-            margin: 15,
-            marginBottom: 10,
-            marginLeft: 10,
-            height: 280,
-            width: width < 728 ? (width * 80) / 100 : 480,
-          }}
-        >
-          <span
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              fontSize: 16,
-              fontWeight: 550,
-            }}
-          >
-            <span style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Price ({cartProducts.length} Items):</span>
-              <span> ₹{totalMrp}</span>
-            </span>
-            <span style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Discounted Amount:</span>
-              <span> ₹{avgDiscount}</span>
-            </span>
-            <span style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Delivery Charges:</span>
-              <span> ₹{50} </span>
-            </span>
-            <Divider
-              style={{ margin: 5, borderColor: "#001529" }}
-              variant="dashed"
-            />
-            <span
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: 18,
-                fontWeight: "bold",
-              }}
-            >
-              <span>Total Amount:</span>
-              <span> ₹{total + 50} </span>
-            </span>
-            <Divider
-              style={{ margin: 5, borderColor: "#001529" }}
-              variant="dashed"
-            />
-            <Button
-              type="primary"
-              style={{
-                borderRadius: 30,
-                fontWeight: "bold",
-                fontSize: 18,
-                backgroundColor: "#001529",
-                width: width < 728 ? (width * 70) / 100 : "50%",
-                alignSelf: "center",
-                marginTop: 10,
-                color: "antiquewhite",
-                padding: 10,
-              }}
-              icon={<DoubleRightOutlined />}
-            >
-              PLACE ORDER
-            </Button>
-          </span>
-        </Card>
-        <Card
-          title={<h4 style={{ margin: 0 }}>Saved for Later</h4>}
-          style={{
-            margin: 15,
-            marginBottom: 0,
-            marginLeft: 10,
-            minHeight: 150,
-            width: width < 728 ? (width * 80) / 100 : 450,
+  const EmptyCart = () => (
+    <div className="text-center py-16">
+      <div className="w-32 h-32 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+        <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6m0 0h9m0 0L16 19"/>
+        </svg>
+      </div>
+      <h3 className="text-xl font-medium text-gray-900 mb-2">Your cart is empty</h3>
+      <p className="text-gray-500 mb-6">Looks like you haven't added any items to your cart yet.</p>
+      <Button type="primary" size="large" className="bg-blue-600 hover:bg-blue-700 border-0">
+        Continue Shopping
+      </Button>
+    </div>
+  );
 
-            overflowY: "scroll",
-            padding: 10,
-            paddingTop: 0,
-          }}
-        >
-          {savedProducts.map((item) => (
-            <div
-              style={{ backgroundColor: "white" }}
-              bodyStyle={{ padding: 6 }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  padding: 10,
-                  backgroundColor: "white",
-                }}
-              >
-                <Image
-                  preview={false}
-                  width={width > 1024 ? 130 : width > 480 ? 44 : 40}
-                  height={width > 1024 ? 105 : width > 480 ? 65 : 60}
-                  alt={item.name}
-                  src={item.image}
-                  style={{
-                    backgroundColor: "antiquewhite",
-                    borderRadius: width > 1024 ? 20 : width > 480 ? 6 : 4,
-                    cursor: "pointer",
-                  }}
-                />
-                {Item({ item: item, fontSize: 10, showButton: true })}
+  return (
+    <div className="min-h-screen bg-antique-200 py-2 sm:py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
+          {/* Left Column - Cart Items */}
+          <div className="lg:col-span-2">
+            <Card className="shadow-sm border-0 rounded-lg overflow-hidden">
+              <div className="border-b border-gray-200 p-3 sm:p-6">
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-900">
+                  Shopping Cart
+                  {cartProducts.length > 0 && (
+                    <span className="text-sm font-normal text-gray-500 ml-2">
+                      ({cartProducts.length} {cartProducts.length === 1 ? 'item' : 'items'})
+                    </span>
+                  )}
+                </h1>
               </div>
-              <Divider style={{ margin: 0 }} />
+
+              {cartProducts.length === 0 ? (
+                <EmptyCart />
+              ) : (
+                <>
+                  <div className="divide-y divide-gray-100">
+                    {cartProducts.map((item) => (
+                      <CartItem key={item.id} item={item} />
+                    ))}
+                  </div>
+                  
+                  {/* Cart Summary */}
+                  <div className="bg-gray-50 p-4 sm:p-6 border-t border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-medium text-gray-900">
+                        Subtotal ({cartProducts.length} {cartProducts.length === 1 ? 'item' : 'items'}):
+                      </span>
+                      <span className="text-xl font-bold text-gray-900">₹{total}</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </Card>
+          </div>
+
+          {/* Right Column - Price Details & Actions */}
+          <div className="lg:col-span-1">
+            <div className="space-y-6">
+              {/* Price Details Card */}
+              <Card className="shadow-sm border-0 rounded-lg sticky top-4">
+                <div className="p-4 sm:p-6">
+                  <h2 className="text-lg font-bold text-gray-900 mb-4">Price Details</h2>
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-gray-700">
+                      <span>Price ({cartProducts.length} {cartProducts.length === 1 ? 'item' : 'items'})</span>
+                      <span>₹{totalMrp}</span>
+                    </div>
+                    
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount</span>
+                      <span>-₹{totalDiscount}</span>
+                    </div>
+                    
+                    <div className="flex justify-between text-gray-700">
+                      <span className="flex items-center gap-1">
+                        Delivery Charges
+                        {total > 499 && (
+                          <span className="text-xs text-green-600 line-through">₹50</span>
+                        )}
+                      </span>
+                      <span className={deliveryCharges === 0 ? "text-green-600" : ""}>
+                        {deliveryCharges === 0 ? "FREE" : `₹${deliveryCharges}`}
+                      </span>
+                    </div>
+                    
+                    {total <= 499 && total > 0 && (
+                      <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded-lg">
+                        Add items worth ₹{499 - total} more for FREE delivery
+                      </div>
+                    )}
+                  </div>
+                  
+                  <Divider className="my-4 border-gray-300" />
+                  
+                  <div className="flex justify-between items-center text-lg font-bold text-gray-900">
+                    <span>Total Amount</span>
+                    <span>₹{finalTotal}</span>
+                  </div>
+                  
+                  <div className="text-xs text-green-600 mt-1">
+                    You will save ₹{totalDiscount} on this order
+                  </div>
+                  
+                  <Button
+                    type="primary"
+                    size="large"
+                    icon={<DoubleRightOutlined />}
+                    disabled={cartProducts.length === 0}
+                    className="w-full mt-6 h-12 text-base font-semibold bg-orange-500 hover:bg-orange-600 border-0 rounded-lg"
+                  >
+                    PLACE ORDER
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Saved for Later */}
+              {savedProducts.length > 0 && (
+                <Card className="shadow-sm border-0 rounded-lg">
+                  <div className="p-3 sm:p-6">
+                    <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">
+                      Saved for Later ({savedProducts.length})
+                    </h2>
+                    
+                    <div className="space-y-3 max-h-80 overflow-y-auto">
+                      {savedProducts.map((item) => (
+                        <div key={item.id} className="flex gap-2 sm:gap-3 p-2 sm:p-3 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                            <Image
+                              preview={false}
+                              src={item.image_url || item.image || `/images/${item.id}.svg`}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-xs sm:text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+                              {item.name}
+                            </h4>
+                            <div className="flex items-center gap-1 sm:gap-2 mb-2">
+                              <span className="text-xs sm:text-sm font-semibold">₹{item.price}</span>
+                              <span className="text-xs text-gray-500 line-through">₹{item.mrp}</span>
+                            </div>
+                            <Button
+                              size="small"
+                              type="primary"
+                              className="text-xs h-6 sm:h-7 bg-blue-600 hover:bg-blue-700 border-0 px-2"
+                            >
+                              Move to Cart
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+              )}
             </div>
-          ))}
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -5,26 +5,31 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { Avatar, Badge, Button, Image, Input, Layout } from "antd";
-import React, { lazy, Suspense, useContext } from "react";
-import { Switch, Route, useHistory, useLocation } from "react-router-dom"; // Corrected import for useHistory
+import React, { lazy, Suspense } from "react";
+import { Switch, Route, useHistory, useLocation } from "react-router-dom";
 import Loading from "./components/Loading";
 import { useSelector } from "react-redux";
+import { AuthProvider } from "./contexts/AuthContext";
+import UserMenu from "./components/UserMenu";
+import ProtectedRoute from "./components/ProtectedRoute";
+import SearchBox from "./components/SearchBox";
 
 const { Header, Content, Footer } = Layout;
 
 const ProductsList = lazy(() => import("./components/ProductsList"));
 const HomePage = lazy(() => import("./components/HomePage"));
 const CartComponent = lazy(() => import("./components/Cart"));
+const ProfileComponent = lazy(() => import("./components/Profile"));
 
 const items = [
   {
     key: "",
     label: "Home",
     icon: (
-      <HomeFilled className="text-[#faebd7] text-3xl" />
+      <HomeFilled className="text-antique-200 text-xl" />
     ),
     selectedIcon: (
-      <HomeFilled className="text-[#001529] text-3xl" />
+      <HomeFilled className="text-slate-800 text-xl" />
     ),
   },
   {
@@ -35,7 +40,8 @@ const items = [
         src={"/images/clothesLogo.svg"}
         alt="logo"
         preview={false}
-        width={28}
+        width={32}
+        className="filter brightness-0 invert opacity-90"
       />
     ),
     selectedIcon: (
@@ -43,7 +49,7 @@ const items = [
         src={"/images/clothesLogoRev.svg"}
         alt="logo"
         preview={false}
-        width={28}
+        width={32}
       />
     ),
   },
@@ -51,17 +57,17 @@ const items = [
     key: "cart",
     label: "Cart",
     icon: (
-      <ShoppingCartOutlined className="text-[#faebd7] text-2xl"  />
+      <ShoppingCartOutlined className="text-antique-200 text-xl"  />
     ),
     selectedIcon: (
-      <ShoppingCartOutlined className="text-[#001529] text-2xl" />
+      <ShoppingCartOutlined className="text-slate-800 text-xl" />
     ),
   },
   {
     key: "account",
     label: "Account",
-    icon: <UserOutlined className="text-[#faebd7] text-2xl"  />,
-    selectedIcon: <UserOutlined className="text-[#001529] text-2xl" />,
+    icon: <UserOutlined className="text-antique-200 text-xl"  />,
+    selectedIcon: <UserOutlined className="text-slate-800 text-xl" />,
   },
 ];
 
@@ -71,37 +77,30 @@ const App = () => {
   const location = useLocation();
 
   return (
-    <Layout className="bg-[antiquewhite] min-h-screen" >
-      <Header className="!h-[130px] sm:!h-[60px]  !pl-2 !pr-2 flex flex-col lg:flex-row">
-        <div className="flex flex-col lg:flex-row items-center w-full justify-between sm:gap-24 ">
+    <AuthProvider>
+      <Layout className="bg-antique-200 min-h-screen" >
+      <Header className="!h-[130px] sm:!h-[60px] !pl-2 !pr-2 flex flex-col lg:flex-row bg-[#001529] fixed top-0 left-0 right-0 z-50">
+        <div className="flex flex-col lg:flex-row items-center w-full justify-between sm:gap-24">
 
           <div className="flex w-[95%] sm:w-[100px] h-[70px] items-center justify-between">
             <img
               src={"/images/Logo.svg"}
               alt="logo"
-              className="cursor-pointer w-[90px] h-[110px] ml-[-20px]"
+              className="cursor-pointer w-[90px] h-[110px] ml-[-20px] hover:scale-105 transition-transform duration-300"
               onClick={() => history.push("/")}
             />
-            <div className="flex gap-2 lg:hidden">
-              <Avatar
-                size="large"
-                icon={<UserOutlined onClick={() => history.push({ pathname: `/account` })} />}
-              />
-              <Badge count={products.filter((i) => i.addedToCart).length} size="small" > <ShoppingCartOutlined className="text-[#faebd7] text-3xl mt-1" onClick={() => history.push({ pathname: `/cart` })} /> </Badge>
-
+            <div className="flex gap-3 lg:hidden">
+              <UserMenu />
             </div>
           </div>
 
-          <Input
-            className="rounded-2l w-[95%] h-[40px] sm:w-[700px] "
-            placeholder="Search for the products..."
-            allowClear
-            onChange={(e) => console.log(e.target.value)}
-            suffix={<SearchOutlined />}
-          />
+          {/* Search Input - Visible on all screen sizes */}
+          <div className="flex w-full max-w-md px-2 lg:px-0">
+            <SearchBox />
+          </div>
 
-          <div className="hidden lg:flex gap-12">
-            {items.map((item) => (
+          <div className="hidden lg:flex gap-4 items-center">
+            {items.slice(0, -1).map((item) => (
               <Button
                 key={item.key}
                 onClick={() => history.push({ pathname: `/${item.key}` })}
@@ -110,23 +109,25 @@ const App = () => {
                     ? item.selectedIcon
                     : item.icon
                 }
-                className={`rounded-[40px] w-[130px] h-[40px] font-bold ${location.pathname === `/${item.key}`
-                    ? "bg-[antiquewhite] text-[#001529]"
-                    : "bg-[#001529] text-[#faebd7]"
-                  }`}
+                className={`rounded-full w-[130px] h-[40px] font-bold transition-all duration-300 hover:scale-105 ${
+                  location.pathname === `/${item.key}`
+                    ? "bg-antique-200 text-slate-800 border-antique-300 shadow-md"
+                    : "bg-slate-800 text-antique-200 border-slate-700 hover:bg-slate-700"
+                }`}
               >
                 {item.label}
                 {item.key === "cart" && (
                   <span
                     className={`
-                w-[50px] h-[24px] 
+                w-[22px] h-[21px] 
                 flex items-center justify-center 
-                rounded-[20px] 
+                rounded-full 
                 border border-solid
-                text-[14px] font-bold
-                ${location.pathname === `/Portfolio/${item.key}`
-                        ? "bg-[#001529] text-white border-[#001529]"
-                        : "bg-[#faebd7] text-[#001529] border-[#001529]"
+                text-[12px] font-bold
+                transition-all duration-300
+                ${location.pathname === `/cart`
+                        ? "bg-slate-800 text-white border-slate-800"
+                        : "bg-antique-200 text-slate-800 border-slate-800"
                       }
               `}
                   >
@@ -135,21 +136,31 @@ const App = () => {
                 )}
               </Button>
             ))}
+            <UserMenu />
           </div>
         </div>
       </Header>
 
-      <Content>
+      <Content className="bg-antique-200 pt-[130px] sm:pt-[60px]">
         <Suspense fallback={<Loading minHeight="100vh" />}>
           <Switch>
-            <Route exact path="/" component={HomePage} />{" "}
+            <Route exact path="/" component={HomePage} />
             <Route exact path="/cart" component={CartComponent} />
             <Route exact path="/products" component={ProductsList} />
+            <Route exact path="/account">
+              <ProtectedRoute>
+                <ProfileComponent />
+              </ProtectedRoute>
+            </Route>
           </Switch>
         </Suspense>
       </Content>
-      <Footer className="text-center">
-          Hira ©{new Date().getFullYear()} Created by Rahul Boddeti
+      <Footer className="text-center bg-slate-800 text-antique-200 py-6 border-t border-slate-700">
+          <div className="max-w-4xl mx-auto">
+            <p className="text-sm">
+              Hira ©{new Date().getFullYear()} Created by <span className="font-semibold text-antique-100">Rahul Boddeti</span>
+            </p>
+          </div>
         </Footer>
       {/* <Footer className="flex lg:hidden bg-[#001529] justify-between z-[1] h-[20px] pb-[65px] mt-[30px]">
         {items.map((item) => (
@@ -178,6 +189,7 @@ const App = () => {
         ))}
       </Footer> */}
     </Layout>
+    </AuthProvider>
   );
 };
 

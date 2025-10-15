@@ -1,206 +1,276 @@
 import { HeartFilled } from "@ant-design/icons";
-import { Button, Card, Flex, Image, Tooltip } from "antd";
-import { useWindowSize } from "./WindowSize";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
-import { addToCart, addToWishlist, removeFromWishlist } from "../redux/productSlice";
-
-const { Meta } = Card;
+import { Button, Card, Image, Tooltip, Spin, Alert } from "antd";
+import { useSelector, useDispatch } from "react-redux";
+import { addToCart, addToWishlist, removeFromWishlist, fetchProducts } from "../redux/productSlice";
+import { fetchSearchResults, setCurrentQuery, clearSearchResults } from "../redux/searchSlice";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 
 const ProductsList = (props) => {
-  const products = useSelector((state) => state.products.products)
-  const [width] = useWindowSize();
   const dispatch = useDispatch();
-  const mobileWidth =
-    width > 768 ? 200 : width > 480 ? (width * 30) / 100 : (width * 50) / 100;
-  return (
-    <div
-      style={{
-        margin: 15,
-        marginRight: width > 728 ? 15 : 0,
-        marginLeft: width > 728 ? 15 : 0,
-        height: "100%",
-        overflow: "scroll",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          marginLeft: width > 728 ? 10 : 0,
-          width: "100%",
-        }}
-      >
-        {width > 768 && <div style={{ width: 350 }}></div>}
-        <Flex
-          gap={width > 728 ? "small" : 0}
-          wrap
-          style={{ marginTop: 40, alignItems: "center" }}
-        >
-          {products.map((product) => (
-            <Card
-              hoverable
-              className="product-card"
-              style={{
-                width: mobileWidth,
-                borderRadius: width > 728 ? 10 : 0,
-              }}
-              cover={
-                <>
-                  <Image
-                    preview={false}
-                    width={mobileWidth}
-                    height={mobileWidth}
-                    style={{
-                      borderRadius: width > 728 ? "10px 10px 0px 0px" : "0px",
-                    }}
-                    alt="example"
-                    src={product.image}
-                  />
-                  {product.wishListed ? (
-                    <Button
-                      onClick={() => dispatch(removeFromWishlist({id: product.id}))}
-                      icon={<HeartFilled />}
-                      type="primary"
-                      style={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: 30,
-                        color: "red",
-                        position: "absolute",
-                        backgroundColor: "white",
-                        top: (mobileWidth * 75) / 100,
-                        left: (mobileWidth * 75) / 100,
-                        zIndex: 30,
-                      }}
-                    />
-                  ) : (
-                    <Button
-                      onClick={() => dispatch(addToWishlist({id: product.id}))}
-                      icon={<HeartFilled />}
-                      type="primary"
-                      style={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: 30,
-                        color: "white",
-                        position: "absolute",
-                        backgroundColor: "red",
-                        top: (mobileWidth * 75) / 100,
-                        left: (mobileWidth * 75) / 100,
-                        zIndex: 30,
-                      }}
-                    />
-                  )}
-                </>
-              }
-            >
-              <Tooltip title={product.name} trigger="hover">
-                <h4
-                  style={{
-                    fontSize: width > 728 ? 15 : 12,
-                    marginTop: -15,
-                    marginBottom: 5,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {product.name}
-                </h4>
-              </Tooltip>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <div style={{ marginBottom: 10 }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: width > 728 ? 16 : 12,
-                        fontWeight: "bold",
-                        color: "green",
-                        marginRight: 5,
-                      }}
-                    >
-                      {" "}
-                      {product.discount}%{" "}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: width > 728 ? 14 : 12,
-                        fontWeight: 600,
-                      }}
-                    >
-                      ₹{product.price}.00
-                    </span>
-                  </div>
+  const location = useLocation();
+  
+  // Redux state
+  const { products, loading: productsLoading, error: productsError } = useSelector(state => state.products);
+  const { searchResults, searchLoading, searchError, currentQuery } = useSelector(state => state.search);
+  
+  // Component state - optimized for performance
+  const [visibleItems, setVisibleItems] = useState(new Set());
+  const itemRefs = useRef([]);
+  const observerRef = useRef(null);
 
-                  <span style={{ fontSize: 8 }}>
-                    M.R.P:{" "}
-                    <span style={{ fontSize: width > 728 ? 12 : 10 }}>₹</span>
-                    <span
-                      style={{ fontSize: 12, textDecoration: "line-through" }}
-                    >
-                      {product.mrp}.00
-                    </span>
-                  </span>
-                </div>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
+  // Get search query from URL
+  const urlParams = new URLSearchParams(location.search);
+  const searchQuery = urlParams.get('search');
+
+  // Fetch products on component mount
+  useEffect(() => {
+    if (products.length === 0) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, products.length]);
+
+  // Handle search when URL changes
+  useEffect(() => {
+    if (searchQuery && searchQuery !== currentQuery) {
+      dispatch(setCurrentQuery(searchQuery));
+      dispatch(fetchSearchResults(searchQuery));
+    } else if (!searchQuery && currentQuery) {
+      dispatch(clearSearchResults());
+    }
+  }, [searchQuery, currentQuery, dispatch]);
+
+  // Determine which products to display
+  const displayProducts = searchResults && searchResults.results 
+    ? searchResults.results.map(result => ({
+        ...result,
+        // Map API result to existing product structure
+        id: result.product_id,
+        image: result.image_url, // Use the actual image URL from database
+        addedToCart: false, // Could check against cartItems
+        wishListed: false, // Could check against wishlistItems
+        price: result.variants[0]?.effective_price || result.base_price,
+        mrp: result.base_price,
+        name: result.name,
+        category: result.category
+      }))
+    : products.map(product => ({
+        ...product,
+        // Ensure regular products also use the correct image field
+        image: product.image_url || product.image || `/images/${product.id}.svg`, // Fallback to SVG if no image_url
+        price: product.variants?.[0]?.effective_price || product.base_price,
+        mrp: product.base_price
+      }));
+
+  // Show first batch of items immediately for better perceived performance
+  useEffect(() => {
+    const initialVisible = new Set();
+    for (let i = 0; i < Math.min(12, displayProducts.length); i++) {
+      initialVisible.add(i);
+    }
+    setVisibleItems(initialVisible);
+  }, [displayProducts.length]);
+
+  // Optimized intersection observer with throttling
+  const handleIntersection = useCallback((entries) => {
+    const newVisibleItems = new Set(visibleItems);
+    let hasChanges = false;
+    
+    entries.forEach((entry) => {
+      const index = parseInt(entry.target.dataset.index);
+      if (entry.isIntersecting && !newVisibleItems.has(index)) {
+        newVisibleItems.add(index);
+        hasChanges = true;
+      }
+    });
+    
+    // Only update state if there are actual changes
+    if (hasChanges) {
+      setVisibleItems(newVisibleItems);
+    }
+  }, [visibleItems]);
+
+  useEffect(() => {
+    // Disconnect previous observer
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    // Create a single intersection observer with throttling
+    observerRef.current = new IntersectionObserver(
+      handleIntersection,
+      {
+        threshold: 0.3, // Higher threshold for better performance
+        rootMargin: '150px 0px', // Larger margin for smoother experience
+      }
+    );
+
+    // Observe all current items
+    itemRefs.current.forEach((ref) => {
+      if (ref && observerRef.current) {
+        observerRef.current.observe(ref);
+      }
+    });
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [displayProducts.length, handleIntersection]);
+
+  const setItemRef = (index) => (el) => {
+    itemRefs.current[index] = el;
+    // Add data attribute for intersection observer
+    if (el) {
+      el.dataset.index = index;
+    }
+  };
+
+  return (
+    <div className="h-full overflow-y-auto p-4 md:p-6">
+      <div className="flex w-full">
+        <div className="hidden xl:block xl:w-80"></div>
+        
+        <div className="flex-1 mt-6 md:mt-10">
+          {/* Search Results Header */}
+          {searchQuery && (
+            <div className="mb-6">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
+                Search results for "{searchQuery}"
+              </h2>
+              {searchResults && (
+                <p className="text-gray-600">
+                  {searchResults.results.length} products found
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Loading State */}
+          {(searchLoading || productsLoading) && (
+            <div className="flex justify-center items-center py-20">
+              <Spin size="large" tip={searchQuery ? "Searching products..." : "Loading products..."} />
+            </div>
+          )}
+
+          {/* Error State */}
+          {(searchError || productsError) && (
+            <Alert
+              message={searchQuery ? "Search Error" : "Products Error"}
+              description={searchError || productsError}
+              type="error"
+              showIcon
+              className="mb-6"
+            />
+          )}
+
+          {/* Products Grid */}
+          {!searchLoading && !productsLoading && !searchError && !productsError && (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6 place-items-center">
+              {displayProducts.map((product, index) => (
+              <Card
+                key={product.id}
+                ref={setItemRef(index)}
+                hoverable
+                className={`product-card w-full max-w-[180px] sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] rounded-none md:rounded-lg border-0 md:border shadow-none md:shadow-sm hover:shadow-md transition-opacity duration-300 ease-out ${
+                  visibleItems.has(index) 
+                    ? 'opacity-100' 
+                    : 'opacity-0'
+                }`}
+                bodyStyle={{ padding: '12px 6px 0px 6px' }}
+                cover={
+                  <div className="relative">
+                    <Image
+                      preview={false}
+                      className="w-full aspect-square object-cover rounded-none md:rounded-t-lg"
+                      alt={product.name}
+                      src={product.image}
+                      fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=="
+                      onError={(e) => {
+                        console.warn(`Failed to load image for ${product.name}:`, product.image);
+                      }}
+                    />
+                    {product.wishListed ? (
+                      <Button
+                        onClick={() => dispatch(removeFromWishlist({id: product.id}))}
+                        icon={<HeartFilled />}
+                        type="primary"
+                        className="absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full border-0 bg-white text-red-500 hover:bg-red-50 shadow-md z-10 flex items-center justify-center p-0"
+                      />
+                    ) : (
+                      <Button
+                        onClick={() => dispatch(addToWishlist({id: product.id}))}
+                        icon={<HeartFilled />}
+                        type="primary"
+                        className="absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full border-0 bg-red-500 text-white hover:bg-red-600 shadow-md z-10 flex items-center justify-center p-0"
+                      />
+                    )}
+                  </div>
+                }
               >
-                {!product.addedToCart ? (
-                  <Button
-                    onClick={() => dispatch(addToCart({id: product.id}))}
-                    type="primary"
-                    style={{
-                      borderRadius: 30,
-                      backgroundColor: "#001529",
-                      color: "white",
-                      marginLeft: 10,
-                      fontWeight: "bold",
-                      width: "98%",
-                      fontSize: width > 728 ? 14 : 10,
-                    }}
-                  >
-                    ADD TO CART
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => {
-                      props.history.push("/cart");
-                    }}
-                    type="primary"
-                    style={{
-                      borderRadius: 30,
-                      backgroundColor: "#001529",
-                      color: "white",
-                      marginLeft: 10,
-                      fontWeight: "bold",
-                      width: "98%",
-                      fontSize: width > 728 ? 14 : 10,
-                    }}
-                  >
-                    GO TO CART
-                  </Button>
-                )}
-              </div>
-            </Card>
-          ))}
-        </Flex>
-        {width > 768 && <div style={{ width: 300 }}></div>}
+                <div className="pt-3 pb-2 px-1 -mt-4">
+                  <Tooltip title={product.name} trigger="hover">
+                    <h4 className="text-xs sm:text-xs md:text-sm font-medium text-gray-800 mb-1 overflow-hidden text-ellipsis leading-tight" 
+                        style={{ 
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          whiteSpace: 'normal',
+                          wordBreak: 'break-word',
+                          lineHeight: '1.2'
+                        }}>
+                      {product.name}
+                    </h4>
+                  </Tooltip>
+                  
+                  <div className="mb-1">
+                    <div className="flex items-center justify-start gap-1 mb-1">
+                      <span className="text-xs sm:text-xs md:text-sm font-bold text-green-600">
+                        {product.discount}%
+                      </span>
+                      <span className="text-xs sm:text-xs md:text-sm font-semibold text-gray-900">
+                        ₹{product.price}.00
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      M.R.P:{" "}
+                      <span className="line-through">
+                        ₹{product.mrp}.00
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="w-full">
+                    {!product.addedToCart ? (
+                      <Button
+                        onClick={() => dispatch(addToCart({id: product.id}))}
+                        type="primary"
+                        className="w-full rounded-full bg-slate-800 hover:bg-slate-700 border-0 text-white font-semibold text-xs py-1 h-7 sm:h-8"
+                      >
+                        ADD TO CART
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => {
+                          props.history.push("/cart");
+                        }}
+                        type="primary"
+                        className="w-full rounded-full bg-slate-800 hover:bg-slate-700 border-0 text-white font-semibold text-xs py-1 h-7 sm:h-8"
+                      >
+                        GO TO CART
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Right spacer for larger screens */}
+        <div className="hidden xl:block xl:w-72"></div>
       </div>
     </div>
   );
