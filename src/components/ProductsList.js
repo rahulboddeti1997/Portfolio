@@ -172,11 +172,7 @@ const ProductsList = (props) => {
 
           {/* Loading State */}
           {(searchLoading || productsLoading) && (
-            <BrandedLoader 
-              size="large" 
-              type={searchQuery ? "search" : "products"}
-              message={searchQuery ? "Finding perfect matches..." : "Curating premium fashion..."}
-            />
+            <ProductCardSkeleton count={8} />
           )}
 
           {/* Error State */}
@@ -193,8 +189,8 @@ const ProductsList = (props) => {
           {/* Products Grid */}
           {!searchLoading && !productsLoading && !searchError && !productsError && (
             <div className="relative">
-              {/* Show skeleton while initial load or many images are loading */}
-              {(displayProducts.length > 0 && loadedImages.size < displayProducts.length * 0.5) && (
+              {/* Show skeleton while images are loading */}
+              {(displayProducts.length > 0 && loadedImages.size < displayProducts.length * 0.3) && (
                 <div className="mb-8">
                   <ProductCardSkeleton count={Math.min(8, displayProducts.length)} />
                 </div>
