@@ -1,4 +1,5 @@
 const supabase = require('../config/database');
+const searchService = require('./searchService');
 
 class ProductService {
   async getAllProducts() {
@@ -39,6 +40,10 @@ class ProductService {
     try {
       const { name, description, base_price, category, color, material, occasion, variants } = productData;
 
+      // Generate embedding for semantic search
+      const embeddingText = `${name}. ${description}. Category: ${category}. Color: ${color || ""}. Material: ${material || ""}. Occasion: ${occasion || ""}. Base price: ${base_price}`;
+      const embedding = await searchService.generateEmbedding(embeddingText);
+
       const { data: product, error: productError } = await supabase
         .from("products")
         .insert({
@@ -48,7 +53,8 @@ class ProductService {
           category,
           color,
           material,
-          occasion
+          occasion,
+          embedding
         })
         .select()
         .single();

@@ -1,10 +1,11 @@
 import { HeartFilled } from "@ant-design/icons";
-import { Button, Card, Image, Tooltip, Spin, Alert } from "antd";
+import { Button, Card, Image, Tooltip, Alert } from "antd";
 import { useSelector, useDispatch } from "react-redux";
 import { addToCart, addToWishlist, removeFromWishlist, fetchProducts } from "../redux/productSlice";
 import { fetchSearchResults, setCurrentQuery, clearSearchResults } from "../redux/searchSlice";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
+import BrandedLoader, { ProductCardSkeleton, ImageWithLoader } from "./BrandedLoader";
 
 const ProductsList = (props) => {
   const dispatch = useDispatch();
@@ -16,6 +17,8 @@ const ProductsList = (props) => {
   
   // Component state - optimized for performance
   const [visibleItems, setVisibleItems] = useState(new Set());
+  const [loadedImages, setLoadedImages] = useState(new Set());
+  const [loadingImages, setLoadingImages] = useState(new Set());
   const itemRefs = useRef([]);
   const observerRef = useRef(null);
 
@@ -40,7 +43,27 @@ const ProductsList = (props) => {
     }
   }, [searchQuery, currentQuery, dispatch]);
 
-  // Determine which products to display
+  // Handle image loading
+  const handleImageLoad = useCallback((productId) => {
+    setLoadingImages(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(productId);
+      return newSet;
+    });
+    setLoadedImages(prev => new Set([...prev, productId]));
+  }, []);
+
+  const handleImageLoadStart = useCallback((productId) => {
+    setLoadingImages(prev => new Set([...prev, productId]));
+  }, []);
+
+  const handleImageError = useCallback((productId) => {
+    setLoadingImages(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(productId);
+      return newSet;
+    });
+  }, []);
   const displayProducts = searchResults && searchResults.results 
     ? searchResults.results.map(result => ({
         ...result,
@@ -149,9 +172,11 @@ const ProductsList = (props) => {
 
           {/* Loading State */}
           {(searchLoading || productsLoading) && (
-            <div className="flex justify-center items-center py-20">
-              <Spin size="large" tip={searchQuery ? "Searching products..." : "Loading products..."} />
-            </div>
+            <BrandedLoader 
+              size="large" 
+              type={searchQuery ? "search" : "products"}
+              message={searchQuery ? "Finding perfect matches..." : "Curating premium fashion..."}
+            />
           )}
 
           {/* Error State */}
@@ -167,29 +192,42 @@ const ProductsList = (props) => {
 
           {/* Products Grid */}
           {!searchLoading && !productsLoading && !searchError && !productsError && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6 place-items-center">
-              {displayProducts.map((product, index) => (
-              <Card
-                key={product.id}
-                ref={setItemRef(index)}
-                hoverable
-                className={`product-card w-full max-w-[180px] sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] rounded-none md:rounded-lg border-0 md:border shadow-none md:shadow-sm hover:shadow-md transition-opacity duration-300 ease-out ${
-                  visibleItems.has(index) 
-                    ? 'opacity-100' 
-                    : 'opacity-0'
-                }`}
-                bodyStyle={{ padding: '12px 6px 0px 6px' }}
+            <div className="relative">
+              {/* Show skeleton while initial load or many images are loading */}
+              {(displayProducts.length > 0 && loadedImages.size < displayProducts.length * 0.5) && (
+                <div className="mb-8">
+                  <ProductCardSkeleton count={Math.min(8, displayProducts.length)} />
+                </div>
+              )}
+              
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-4 md:gap-6 place-items-center">
+                {displayProducts.map((product, index) => {
+                  const isImageLoaded = loadedImages.has(product.id);
+                  const shouldShow = visibleItems.has(index) && (isImageLoaded || loadedImages.size > displayProducts.length * 0.5);
+                  
+                  return (
+                    <Card
+                      key={product.id}
+                      ref={setItemRef(index)}
+                      hoverable
+                      className={`product-card w-full max-w-[180px] sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] rounded-none md:rounded-lg border-0 md:border shadow-none md:shadow-sm hover:shadow-md transition-all duration-500 ease-out ${
+                        shouldShow
+                          ? 'opacity-100 transform-none animate-fadeInUp' 
+                          : 'opacity-0 transform translate-y-4'
+                      }`}
+                      bodyStyle={{ padding: '12px 6px 0px 6px' }}
                 cover={
-                  <div className="relative">
-                    <Image
-                      preview={false}
-                      className="w-full aspect-square object-cover rounded-none md:rounded-t-lg"
+                  <div className="relative aspect-square">
+                    <ImageWithLoader
+                      src={product.image_url || product.image || `/images/${product.id}.svg`}
                       alt={product.name}
-                      src={product.image}
+                      className="w-full h-full object-cover rounded-none md:rounded-t-lg"
                       fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=="
-                      onError={(e) => {
-                        console.warn(`Failed to load image for ${product.name}:`, product.image);
+                      onLoad={() => {
+                        handleImageLoadStart(product.id);
+                        setTimeout(() => handleImageLoad(product.id), 200);
                       }}
+                      onError={() => handleImageError(product.id)}
                     />
                     {product.wishListed ? (
                       <Button
@@ -200,10 +238,9 @@ const ProductsList = (props) => {
                       />
                     ) : (
                       <Button
-                        onClick={() => dispatch(addToWishlist({id: product.id}))}
+                        onClick={() => dispatch(addToWishlist(product))}
                         icon={<HeartFilled />}
-                        type="primary"
-                        className="absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full border-0 bg-red-500 text-white hover:bg-red-600 shadow-md z-10 flex items-center justify-center p-0"
+                        className="absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full border-0 bg-white text-gray-400 hover:text-red-500 hover:bg-red-50 shadow-md z-10 flex items-center justify-center p-0"
                       />
                     )}
                   </div>
@@ -264,7 +301,9 @@ const ProductsList = (props) => {
                   </div>
                 </div>
               </Card>
-            ))}
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
