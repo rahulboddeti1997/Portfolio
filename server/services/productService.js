@@ -38,7 +38,7 @@ class ProductService {
 
   async createProduct(productData) {
     try {
-      const { name, description, base_price, category, color, material, occasion, variants } = productData;
+      const { name, description, base_price, category, color, material, occasion, image_url, variants } = productData;
 
       // Generate embedding for semantic search
       const embeddingText = `${name}. ${description}. Category: ${category}. Color: ${color || ""}. Material: ${material || ""}. Occasion: ${occasion || ""}. Base price: ${base_price}`;
@@ -54,6 +54,7 @@ class ProductService {
           color,
           material,
           occasion,
+          image_url,
           embedding
         })
         .select()
