@@ -43,12 +43,15 @@ app.get("/api/health", (req, res) => {
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../build")));
   
-  // Catch-all handler for non-API routes (React Router)
-  app.get("*", (req, res) => {
-    if (!req.url.startsWith('/api') && !req.url.startsWith('/products') && !req.url.startsWith('/search') && !req.url.startsWith('/autocomplete')) {
+  // Handle React Router routes
+  app.use((req, res, next) => {
+    if (!req.url.startsWith('/api') && 
+        !req.url.startsWith('/products') && 
+        !req.url.startsWith('/search') && 
+        !req.url.startsWith('/autocomplete')) {
       res.sendFile(path.join(__dirname, "../build/index.html"));
     } else {
-      res.status(404).json({ error: "API endpoint not found" });
+      next();
     }
   });
 }
