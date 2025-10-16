@@ -18,7 +18,8 @@ export const fetchAutocomplete = createAsyncThunk(
       }
       
       console.log('Fetching autocomplete from API for:', query);
-      const response = await fetch(`/autocomplete?query=${encodeURIComponent(query)}`);
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${API_BASE_URL}/autocomplete?query=${encodeURIComponent(query)}`);
       if (!response.ok) {
         throw new Error('Failed to fetch autocomplete');
       }
@@ -35,7 +36,8 @@ export const fetchSearchResults = createAsyncThunk(
   'search/fetchSearchResults',
   async (query, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${API_BASE_URL}/search?query=${encodeURIComponent(query)}`);
       if (!response.ok) {
         throw new Error('Failed to fetch search results');
       }
