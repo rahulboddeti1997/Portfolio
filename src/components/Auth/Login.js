@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, Card, Form, Input, Divider, message, Spin } from "antd";
+import { Button, Card, Form, Input, Divider, message } from "antd";
 import { GoogleOutlined, MailOutlined, LockOutlined, UserOutlined, PhoneOutlined } from "@ant-design/icons";
 import { createClient } from '@supabase/supabase-js';
 

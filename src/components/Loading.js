@@ -1,6 +1,7 @@
 import React from "react";
-import { Skeleton, Spin } from "antd";
+import { Skeleton } from "antd";
 import PropTypes from "prop-types";
+import BrandedLoader from "./BrandedLoader";
 import "./Loading.css";
 
 export default function Loading({ type, minHeight }) {
@@ -13,15 +14,11 @@ export default function Loading({ type, minHeight }) {
     );
   return (
     <div data-testid="loading" className="loading" style={style}>
-      <Spin tip="Loading..." size="large">
-        <div
-          style={{
-            padding: 50,
-            background: "#0000000",
-            borderRadius: 4,
-          }}
-        />
-      </Spin>
+      <BrandedLoader 
+        size="large"
+        type="default"
+        message="Loading..."
+      />
     </div>
   );
 }

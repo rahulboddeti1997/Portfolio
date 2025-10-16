@@ -1,5 +1,5 @@
 import { useAuth } from '../contexts/AuthContext';
-import { Spin } from 'antd';
+import BrandedLoader from './BrandedLoader';
 import Login from './Auth/Login';
 import { useState } from 'react';
 
@@ -9,9 +9,12 @@ const ProtectedRoute = ({ children, fallback = null }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-antique-white flex items-center justify-center">
-        <Spin size="large" />
-      </div>
+      <BrandedLoader 
+        fullPage={true}
+        size="large"
+        type="auth"
+        message="Authenticating..."
+      />
     );
   }
 
