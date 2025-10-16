@@ -13,11 +13,8 @@ export const fetchAutocomplete = createAsyncThunk(
       const state = getState();
       const cachedResult = state.search.autocompleteCache[query];
       if (cachedResult) {
-        console.log('Using cached autocomplete result for:', query);
         return cachedResult;
       }
-      
-      console.log('Fetching autocomplete from API for:', query);
       const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
       const response = await fetch(`${API_BASE_URL}/autocomplete?query=${encodeURIComponent(query)}`);
       if (!response.ok) {

@@ -19,7 +19,6 @@ const SearchBox = ({ className = "" }) => {
     debounce((query) => {
       // Only make API call if query is different from last one and meets criteria
       if (query && query.length >= 3 && query !== lastQuery) { // Increased minimum length to 3
-        console.log('Making autocomplete API call for:', query);
         dispatch(fetchAutocomplete(query));
         setLastQuery(query);
       } else if (!query || query.length < 3) {
@@ -129,7 +128,7 @@ const SearchBox = ({ className = "" }) => {
         onSelect={handleSelect}
         onSearch={handleSearchChange}
         className="w-full"
-        dropdownClassName="search-dropdown"
+        popupClassName="search-dropdown"
         notFoundContent={
           autocompleteLoading 
             ? 'Searching...' 

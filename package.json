@@ -30,8 +30,13 @@
     "build": "CI=false react-scripts build",
     "start": "node server/index.js",
     "test": "react-scripts test",
+    "test:coverage": "react-scripts test --coverage --watchAll=false",
+    "test:watch": "react-scripts test --watch",
     "eject": "react-scripts eject",
-    "render-build": "npm run build"
+    "render-build": "npm run build",
+    "seed-db": "cd server/data && node seedDatabase.js",
+    "lint": "eslint src/",
+    "clean": "rm -rf build/ node_modules/.cache/"
   },
   "eslintConfig": {
     "extends": [
