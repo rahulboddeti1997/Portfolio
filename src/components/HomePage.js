@@ -68,7 +68,6 @@ const HomePage = (props) => {
               dots={true}
               className="rounded-xl md:rounded-2xl overflow-hidden shadow-lg"
             >
-              {/* Banner Image - First Slide */}
               <div className="relative rounded-xl md:rounded-2xl overflow-hidden">
                 <picture>
                   <img
@@ -77,41 +76,6 @@ const HomePage = (props) => {
                     className="w-full h-[250px] sm:h-[350px] md:h-[450px] lg:h-[550px] xl:h-[600px] object-cover"
                   />
                 </picture>
-                <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-                      Featured Collection
-                    </h1>
-                    <p className="text-sm sm:text-lg md:text-xl max-w-2xl mx-auto drop-shadow-md">
-                      Discover our latest premium fashion arrivals
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Hero Image - Second Slide */}
-              <div className="relative rounded-xl md:rounded-2xl overflow-hidden">
-                <picture>
-                  <source
-                    srcSet="/images/saveTheDateMob.svg"
-                    media="(max-width: 767px)"
-                  />
-                  <img
-                    src="/images/saveTheDate.svg"
-                    alt="Welcome to Hira - Premium Fashion Collection"
-                    className="w-full h-[250px] sm:h-[350px] md:h-[450px] lg:h-[550px] xl:h-[600px] object-cover"
-                  />
-                </picture>
-                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-                      Welcome to Hira
-                    </h1>
-                    <p className="text-sm sm:text-lg md:text-xl max-w-2xl mx-auto drop-shadow-md">
-                      Discover premium quality garments and fashion accessories
-                    </p>
-                  </div>
-                </div>
               </div>
             </Carousel>
           </div>
