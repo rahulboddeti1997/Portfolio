@@ -26,17 +26,8 @@ app.use("/products", productRoutes);
 app.use("/autocomplete", autocompleteRoutes);
 app.use("/search", searchRoutes);
 
-// Serve static files in production
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../build")));
-  
-  app.get("/*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../build/index.html"));
-  });
-}
-
 // Health check
-app.get("/", (req, res) => {
+app.get("/api/health", (req, res) => {
   res.json({ 
     status: "Server is running 🚀",
     timestamp: new Date().toISOString(),
@@ -47,6 +38,20 @@ app.get("/", (req, res) => {
     }
   });
 });
+
+// Serve static files in production
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../build")));
+  
+  // Catch-all handler for non-API routes (React Router)
+  app.get("*", (req, res) => {
+    if (!req.url.startsWith('/api') && !req.url.startsWith('/products') && !req.url.startsWith('/search') && !req.url.startsWith('/autocomplete')) {
+      res.sendFile(path.join(__dirname, "../build/index.html"));
+    } else {
+      res.status(404).json({ error: "API endpoint not found" });
+    }
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
