@@ -31,48 +31,100 @@ export const productSlice = createSlice({
   initialState,
   reducers: {
     addToCart: (state, action) => {
-      const product = action.payload;
-      const existingItem = state.cartItems.find(item => item.id === product.id);
+      const { id, variant, quantity = 1 } = action.payload;
+      
+      // Find the product in the products array
+      const product = state.products.find(p => p.id === id);
+      if (!product) return;
+      
+      // Create a unique identifier for variant-specific items
+      const variantId = variant ? (variant.id || variant.variant_id || variant.size) : null;
+      const cartItemId = variantId ? `${id}-${variantId}` : id;
+      
+      // Check if this specific variant is already in cart
+      const existingItem = state.cartItems.find(item => 
+        item.cartItemId === cartItemId
+      );
       
       if (existingItem) {
-        existingItem.quantity += 1;
+        existingItem.quantity += quantity;
       } else {
-        state.cartItems.push({ ...product, quantity: 1 });
+        const cartItem = {
+          ...product,
+          cartItemId,
+          originalId: id,
+          selectedVariant: variant,
+          quantity: quantity,
+          addedToCart: true
+        };
+        state.cartItems.push(cartItem);
       }
       
       localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
       
-      const productIndex = state.products.findIndex(p => p.id === product.id);
+      // Mark the base product as added to cart
+      const productIndex = state.products.findIndex(p => p.id === id);
       if (productIndex !== -1) {
         state.products[productIndex].addedToCart = true;
       }
     },
     
     removeFromCart: (state, action) => {
-      const productId = action.payload;
-      state.cartItems = state.cartItems.filter(item => item.id !== productId);
+      const { id, cartItemId } = action.payload;
+      
+      if (cartItemId) {
+        // Remove specific variant
+        state.cartItems = state.cartItems.filter(item => item.cartItemId !== cartItemId);
+      } else {
+        // Remove by product ID (legacy support)
+        state.cartItems = state.cartItems.filter(item => item.originalId !== id && item.id !== id);
+      }
+      
       localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
       
-      const productIndex = state.products.findIndex(p => p.id === productId);
-      if (productIndex !== -1) {
-        state.products[productIndex].addedToCart = false;
+      // Check if any variants of this product are still in cart
+      const productId = id || cartItemId?.split('-')[0];
+      const hasVariantsInCart = state.cartItems.some(item => 
+        item.originalId === productId || item.id === productId
+      );
+      
+      // Only mark as not in cart if no variants remain
+      if (!hasVariantsInCart) {
+        const productIndex = state.products.findIndex(p => p.id === productId);
+        if (productIndex !== -1) {
+          state.products[productIndex].addedToCart = false;
+        }
       }
     },
     
     updateQuantity: (state, action) => {
-      const { id, quantity } = action.payload;
-      const item = state.cartItems.find(item => item.id === id);
+      const { id, cartItemId, quantity } = action.payload;
+      
+      const item = state.cartItems.find(item => 
+        item.cartItemId === (cartItemId || id)
+      );
+      
       if (item && quantity > 0) {
         item.quantity = quantity;
         localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
       } else if (item && quantity <= 0) {
         // Remove item if quantity is 0 or negative
-        state.cartItems = state.cartItems.filter(item => item.id !== id);
+        state.cartItems = state.cartItems.filter(item => 
+          item.cartItemId !== (cartItemId || id)
+        );
         localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
         
-        const productIndex = state.products.findIndex(p => p.id === id);
-        if (productIndex !== -1) {
-          state.products[productIndex].addedToCart = false;
+        // Check if this was the last variant of the product
+        const productId = item.originalId || item.id;
+        const hasVariantsInCart = state.cartItems.some(cartItem => 
+          cartItem.originalId === productId || cartItem.id === productId
+        );
+        
+        if (!hasVariantsInCart) {
+          const productIndex = state.products.findIndex(p => p.id === productId);
+          if (productIndex !== -1) {
+            state.products[productIndex].addedToCart = false;
+          }
         }
       }
     },

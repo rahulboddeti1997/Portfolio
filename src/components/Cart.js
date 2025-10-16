@@ -1,36 +1,94 @@
 import { DoubleRightOutlined, DeleteOutlined, HeartOutlined, MinusOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Card, Divider, Image, message } from "antd";
+import { Button, Card, Divider, Image, message, Tag, Select } from "antd";
 import { useSelector, useDispatch } from "react-redux";
-import { removeFromCart, updateQuantity, addToWishlist } from "../redux/productSlice";
+import { removeFromCart, updateQuantity, addToWishlist, addToCart } from "../redux/productSlice";
 
 const Cart = () => {
   const products = useSelector((state) => state.products.products);
   const dispatch = useDispatch();
 
-  const cartProducts = products.filter((i) => i.addedToCart === true);
-  const total = cartProducts.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
-  const totalMrp = cartProducts.reduce((acc, item) => acc + (item.mrp * (item.quantity || 1)), 0);
+  // Helper function to format price in Indian locale
+  const formatIndianPrice = (price) => {
+    return new Intl.NumberFormat('en-IN').format(Math.round(price));
+  };
+
+  // Helper function to get effective price from variant or base price
+  const getEffectivePrice = (item) => {
+    if (item.selectedVariant) {
+      // For variants, use the product's base price and apply variant discount
+      const basePrice = item.mrp || item.price || item.base_price || 0;
+      const discountPercent = item.selectedVariant.discount_percentage || 0;
+      const effectivePrice = basePrice * (1 - discountPercent / 100);
+      return effectivePrice;
+    }
+    
+    // Fallback to item pricing (for items added without variants)
+    return item.price || item.mrp || item.base_price || 0;
+  };
+
+  // Helper function to get original price for discount calculation
+  const getOriginalPrice = (item) => {
+    // Always use the base product price as original
+    return item.mrp || item.price || item.base_price || 0;
+  };
+
+  const { cartItems } = useSelector((state) => state.products);
+  const cartProducts = cartItems || [];
+  const total = cartProducts.reduce((acc, item) => acc + (getEffectivePrice(item) * (item.quantity || 1)), 0);
+  const totalMrp = cartProducts.reduce((acc, item) => acc + (getOriginalPrice(item) * (item.quantity || 1)), 0);
   const savedProducts = products.filter((i) => i.savedForLater === true);
   const totalDiscount = totalMrp - total;
   const deliveryCharges = total > 499 ? 0 : 50;
   const finalTotal = total + deliveryCharges;
 
-  const handleRemoveItem = (id) => {
-    dispatch(removeFromCart({ id }));
+  const handleRemoveItem = (item) => {
+    dispatch(removeFromCart({ 
+      id: item.originalId || item.id, 
+      cartItemId: item.cartItemId 
+    }));
     message.success('Item removed from cart');
   };
 
-  const handleMoveToWishlist = (id) => {
-    dispatch(removeFromCart({ id }));
-    dispatch(addToWishlist({ id }));
+  const handleMoveToWishlist = (item) => {
+    dispatch(removeFromCart({ 
+      id: item.originalId || item.id, 
+      cartItemId: item.cartItemId 
+    }));
+    dispatch(addToWishlist({ id: item.originalId || item.id }));
     message.success('Item moved to wishlist');
   };
 
-  const handleQuantityChange = (id, quantity) => {
+  const handleQuantityChange = (item, quantity) => {
     if (quantity > 0) {
-      dispatch(updateQuantity({ id, quantity }));
+      dispatch(updateQuantity({ 
+        id: item.originalId || item.id, 
+        cartItemId: item.cartItemId,
+        quantity 
+      }));
     }
   };
+
+  const handleVariantChange = (item, newVariant) => {
+    const product = products.find(p => p.id === (item.originalId || item.id));
+    if (!product) return;
+
+    // Remove current item from cart
+    dispatch(removeFromCart({ 
+      id: item.originalId || item.id, 
+      cartItemId: item.cartItemId 
+    }));
+
+    // Add new variant to cart with same quantity
+    dispatch(addToCart({ 
+      id: product.id, 
+      variant: newVariant,
+      quantity: item.quantity || 1
+    }));
+
+    message.success(`Size changed to ${newVariant.size}`);
+  };
+
+
 
   const CartItem = ({ item }) => (
     <div className="bg-white border-b border-gray-100 p-3 sm:p-6 hover:bg-gray-50 transition-colors duration-200">
@@ -42,7 +100,7 @@ const Cart = () => {
             <div className="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
               <Image
                 preview={false}
-                src={item.image_url || item.image || `/images/${item.id}.svg`}
+                src={item.image_url || item.image || `/images/${item.originalId || item.id}.svg`}
                 alt={item.name}
                 className="w-full h-full object-cover"
               />
@@ -54,16 +112,70 @@ const Cart = () => {
             <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
               {item.name}
             </h3>
+            
+            {/* Variant Info - Mobile */}
+            {item.selectedVariant && (
+              <div className="mb-1">
+                {(() => {
+                  const product = products.find(p => p.id === (item.originalId || item.id));
+                  const availableVariants = product?.variants || [];
+                  
+                  return availableVariants.length > 1 ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-600">Size:</span>
+                      <Select
+                        size="small"
+                        value={item.selectedVariant.size}
+                        onChange={(size) => {
+                          const newVariant = availableVariants.find(v => v.size === size);
+                          if (newVariant) {
+                            handleVariantChange(item, newVariant);
+                          }
+                        }}
+                        className="min-w-[60px] cart-size-selector"
+                        dropdownMatchSelectWidth={false}
+                        style={{
+                          backgroundColor: '#f3f4f6',
+                          border: '1px solid #d1d5db'
+                        }}
+                      >
+                        {availableVariants
+                          .filter(variant => variant.stock > 0)
+                          .map((variant) => (
+                          <Select.Option key={variant.size} value={variant.size}>
+                            {variant.size}
+                            {variant.stock <= 5 && (
+                              <span className="text-orange-500 text-xs ml-1">
+                                ({variant.stock} left)
+                              </span>
+                            )}
+                          </Select.Option>
+                        ))}
+                      </Select>
+                    </div>
+                  ) : (
+                    <Tag size="small" className="text-xs">
+                      Size: {item.selectedVariant.size}
+                    </Tag>
+                  );
+                })()}
+              </div>
+            )}
+            
             <div className="flex items-center gap-2 mb-1">
               <span className="text-base font-bold text-gray-900">
-                ₹{item.price}
+                ₹{formatIndianPrice(getEffectivePrice(item))}
               </span>
-              <span className="text-xs text-gray-500 line-through">
-                ₹{item.mrp}
-              </span>
-              <span className="text-xs font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
-                {item.discount}% OFF
-              </span>
+              {getOriginalPrice(item) > getEffectivePrice(item) && (
+                <>
+                  <span className="text-xs text-gray-500 line-through">
+                    ₹{formatIndianPrice(getOriginalPrice(item))}
+                  </span>
+                  <span className="text-xs font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
+                    {Math.round(((getOriginalPrice(item) - getEffectivePrice(item)) / getOriginalPrice(item)) * 100)}% OFF
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -77,7 +189,7 @@ const Cart = () => {
               <Button
                 size="small"
                 icon={<MinusOutlined />}
-                onClick={() => handleQuantityChange(item.id, (item.quantity || 1) - 1)}
+                onClick={() => handleQuantityChange(item, (item.quantity || 1) - 1)}
                 className="border-0 hover:bg-gray-100 w-8 h-8 flex items-center justify-center"
                 disabled={(item.quantity || 1) <= 1}
               />
@@ -87,7 +199,7 @@ const Cart = () => {
               <Button
                 size="small"
                 icon={<PlusOutlined />}
-                onClick={() => handleQuantityChange(item.id, (item.quantity || 1) + 1)}
+                onClick={() => handleQuantityChange(item, (item.quantity || 1) + 1)}
                 className="border-0 hover:bg-gray-100 w-8 h-8 flex items-center justify-center"
                 disabled={(item.quantity || 1) >= 10}
               />
@@ -99,13 +211,13 @@ const Cart = () => {
             <Button
               size="small"
               icon={<HeartOutlined />}
-              onClick={() => handleMoveToWishlist(item.id)}
+              onClick={() => handleMoveToWishlist(item)}
               className="text-gray-600 hover:text-red-500 border-gray-300 w-8 h-8 flex items-center justify-center p-0"
             />
             <Button
               size="small"
               icon={<DeleteOutlined />}
-              onClick={() => handleRemoveItem(item.id)}
+              onClick={() => handleRemoveItem(item)}
               className="text-gray-600 hover:text-red-500 border-gray-300 w-8 h-8 flex items-center justify-center p-0"
             />
           </div>
@@ -119,7 +231,7 @@ const Cart = () => {
           <div className="w-28 h-28 md:w-32 md:h-32 bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
             <Image
               preview={false}
-              src={item.image_url || item.image || `/images/${item.id}.svg`}
+              src={item.image_url || item.image || `/images/${item.originalId || item.id}.svg`}
               alt={item.name}
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
             />
@@ -134,17 +246,84 @@ const Cart = () => {
                 {item.name}
               </h3>
               
+              {/* Variant Info - Desktop */}
+              {item.selectedVariant && (
+                <div className="mb-2">
+                  {(() => {
+                    const product = products.find(p => p.id === (item.originalId || item.id));
+                    const availableVariants = product?.variants || [];
+                    
+                    return availableVariants.length > 1 ? (
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">Size:</span>
+                          <Select
+                            size="small"
+                            value={item.selectedVariant.size}
+                            onChange={(size) => {
+                              const newVariant = availableVariants.find(v => v.size === size);
+                              if (newVariant) {
+                                handleVariantChange(item, newVariant);
+                              }
+                            }}
+                            className="min-w-[70px] cart-size-selector"
+                            dropdownMatchSelectWidth={false}
+                            style={{
+                              backgroundColor: '#f3f4f6',
+                              border: '1px solid #d1d5db'
+                            }}
+                          >
+                            {availableVariants
+                              .filter(variant => variant.stock > 0)
+                              .map((variant) => (
+                              <Select.Option key={variant.size} value={variant.size}>
+                                {variant.size}
+                                {variant.stock <= 5 && (
+                                  <span className="text-orange-500 text-xs ml-1">
+                                    ({variant.stock} left)
+                                  </span>
+                                )}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        </div>
+                        {item.selectedVariant.stock <= 5 && item.selectedVariant.stock > 0 && (
+                          <Tag color="orange" className="text-xs">
+                            Only {item.selectedVariant.stock} left
+                          </Tag>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <Tag className="text-sm">
+                          Size: {item.selectedVariant.size}
+                        </Tag>
+                        {item.selectedVariant.stock <= 5 && item.selectedVariant.stock > 0 && (
+                          <Tag color="orange" className="text-xs">
+                            Only {item.selectedVariant.stock} left
+                          </Tag>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+              
               {/* Price Section - Desktop */}
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-lg md:text-xl font-bold text-gray-900">
-                  ₹{item.price}
+                  ₹{formatIndianPrice(getEffectivePrice(item))}
                 </span>
-                <span className="text-sm text-gray-500 line-through">
-                  ₹{item.mrp}
-                </span>
-                <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded">
-                  {item.discount}% OFF
-                </span>
+                {getOriginalPrice(item) > getEffectivePrice(item) && (
+                  <>
+                    <span className="text-sm text-gray-500 line-through">
+                      ₹{formatIndianPrice(getOriginalPrice(item))}
+                    </span>
+                    <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded">
+                      {Math.round(((getOriginalPrice(item) - getEffectivePrice(item)) / getOriginalPrice(item)) * 100)}% OFF
+                    </span>
+                  </>
+                )}
               </div>
 
               {/* Quantity and Actions - Desktop */}
@@ -154,7 +333,7 @@ const Cart = () => {
                     <Button
                       size="small"
                       icon={<MinusOutlined />}
-                      onClick={() => handleQuantityChange(item.id, (item.quantity || 1) - 1)}
+                      onClick={() => handleQuantityChange(item, (item.quantity || 1) - 1)}
                       className="border-0 hover:bg-gray-100"
                       disabled={(item.quantity || 1) <= 1}
                     />
@@ -164,7 +343,7 @@ const Cart = () => {
                     <Button
                       size="small"
                       icon={<PlusOutlined />}
-                      onClick={() => handleQuantityChange(item.id, (item.quantity || 1) + 1)}
+                      onClick={() => handleQuantityChange(item, (item.quantity || 1) + 1)}
                       className="border-0 hover:bg-gray-100"
                       disabled={(item.quantity || 1) >= 10}
                     />
@@ -179,7 +358,7 @@ const Cart = () => {
                   <Button
                     size="small"
                     icon={<HeartOutlined />}
-                    onClick={() => handleMoveToWishlist(item.id)}
+                    onClick={() => handleMoveToWishlist(item)}
                     className="text-gray-600 hover:text-red-500 border-gray-300"
                   >
                     <span className="hidden sm:inline">Save</span>
@@ -187,7 +366,7 @@ const Cart = () => {
                   <Button
                     size="small"
                     icon={<DeleteOutlined />}
-                    onClick={() => handleRemoveItem(item.id)}
+                    onClick={() => handleRemoveItem(item)}
                     className="text-gray-600 hover:text-red-500 border-gray-300"
                   >
                     <span className="hidden sm:inline">Remove</span>
@@ -240,7 +419,7 @@ const Cart = () => {
                 <>
                   <div className="divide-y divide-gray-100">
                     {cartProducts.map((item) => (
-                      <CartItem key={item.id} item={item} />
+                      <CartItem key={item.cartItemId || item.id} item={item} />
                     ))}
                   </div>
                   
@@ -250,7 +429,7 @@ const Cart = () => {
                       <span className="text-lg font-medium text-gray-900">
                         Subtotal ({cartProducts.length} {cartProducts.length === 1 ? 'item' : 'items'}):
                       </span>
-                      <span className="text-xl font-bold text-gray-900">₹{total}</span>
+                      <span className="text-xl font-bold text-gray-900">₹{formatIndianPrice(total)}</span>
                     </div>
                   </div>
                 </>
@@ -269,12 +448,12 @@ const Cart = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between text-gray-700">
                       <span>Price ({cartProducts.length} {cartProducts.length === 1 ? 'item' : 'items'})</span>
-                      <span>₹{totalMrp}</span>
+                      <span>₹{formatIndianPrice(totalMrp)}</span>
                     </div>
                     
                     <div className="flex justify-between text-green-600">
                       <span>Discount</span>
-                      <span>-₹{totalDiscount}</span>
+                      <span>-₹{formatIndianPrice(totalDiscount)}</span>
                     </div>
                     
                     <div className="flex justify-between text-gray-700">
@@ -285,13 +464,13 @@ const Cart = () => {
                         )}
                       </span>
                       <span className={deliveryCharges === 0 ? "text-green-600" : ""}>
-                        {deliveryCharges === 0 ? "FREE" : `₹${deliveryCharges}`}
+                        {deliveryCharges === 0 ? "FREE" : `₹${formatIndianPrice(deliveryCharges)}`}
                       </span>
                     </div>
                     
                     {total <= 499 && total > 0 && (
                       <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded-lg">
-                        Add items worth ₹{499 - total} more for FREE delivery
+                        Add items worth ₹{formatIndianPrice(499 - total)} more for FREE delivery
                       </div>
                     )}
                   </div>
@@ -300,11 +479,11 @@ const Cart = () => {
                   
                   <div className="flex justify-between items-center text-lg font-bold text-gray-900">
                     <span>Total Amount</span>
-                    <span>₹{finalTotal}</span>
+                    <span>₹{formatIndianPrice(finalTotal)}</span>
                   </div>
                   
                   <div className="text-xs text-green-600 mt-1">
-                    You will save ₹{totalDiscount} on this order
+                    You will save ₹{formatIndianPrice(totalDiscount)} on this order
                   </div>
                   
                   <Button

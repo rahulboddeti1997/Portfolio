@@ -20,6 +20,7 @@ const ProductsList = lazy(() => import("./components/ProductsList"));
 const HomePage = lazy(() => import("./components/HomePage"));
 const CartComponent = lazy(() => import("./components/Cart"));
 const ProfileComponent = lazy(() => import("./components/Profile"));
+const ProductDetail = lazy(() => import("./components/ProductDetail"));
 
 const items = [
   {
@@ -147,6 +148,7 @@ const App = () => {
             <Route exact path="/" component={HomePage} />
             <Route exact path="/cart" component={CartComponent} />
             <Route exact path="/products" component={ProductsList} />
+            <Route exact path="/product/:id" component={ProductDetail} />
             <Route exact path="/account">
               <ProtectedRoute>
                 <ProfileComponent />
