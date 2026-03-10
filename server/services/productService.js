@@ -12,7 +12,6 @@ class ProductService {
         throw productError;
       }
 
-      // Get variants for each product
       const productsWithVariants = await Promise.all(
         products.map(async (product) => {
           const { data: variants, error: variantError } = await supabase
@@ -40,7 +39,6 @@ class ProductService {
     try {
       const { name, description, base_price, category, color, material, occasion, image_url, variants } = productData;
 
-      // Generate embedding for semantic search
       const embeddingText = `${name}. ${description}. Category: ${category}. Color: ${color || ""}. Material: ${material || ""}. Occasion: ${occasion || ""}. Base price: ${base_price}`;
       const embedding = await searchService.generateEmbedding(embeddingText);
 

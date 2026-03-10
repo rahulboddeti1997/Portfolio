@@ -3,18 +3,14 @@ import { Button, Card, Form, Input, Divider, message } from "antd";
 import { GoogleOutlined, MailOutlined, LockOutlined, UserOutlined, PhoneOutlined } from "@ant-design/icons";
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase configuration with fallbacks
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
 
-// Only initialize Supabase if we have valid credentials
 let supabase = null;
-
 if (supabaseUrl && supabaseKey && supabaseUrl !== 'your-supabase-url') {
   try {
     supabase = createClient(supabaseUrl, supabaseKey);
   } catch (error) {
-    // Supabase not properly configured, component will show fallback UI
   }
 }
 
@@ -23,14 +19,13 @@ const Login = ({ onAuthSuccess, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [form] = Form.useForm();
+console.log(supabaseUrl)
 
   useEffect(() => {
-    // Only proceed if Supabase is available
     if (!supabase) {
       return;
     }
 
-    // Check if user is already authenticated
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -39,7 +34,6 @@ const Login = ({ onAuthSuccess, onClose }) => {
     };
     checkAuth();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
@@ -60,7 +54,6 @@ const Login = ({ onAuthSuccess, onClose }) => {
     setLoading(true);
     try {
       if (isLogin) {
-        // Sign in with email
         const { data, error } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
