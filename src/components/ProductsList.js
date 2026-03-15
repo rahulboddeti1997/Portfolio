@@ -82,7 +82,8 @@ const ProductsList = (props) => {
 
   const getSelectedVariant = (product) => {
     if (!product.variants || product.variants.length === 0) return null;
-    const selectedVariantId = selectedVariants[product.id];
+    const productId = product.id || product.product_id;
+    const selectedVariantId = selectedVariants[productId];
     const selectedVariant = product.variants.find(v => (v.variant_id || v.id) === selectedVariantId);
     return selectedVariant || product.variants.find(v => v.stock > 0) || product.variants[0];
   };
@@ -306,20 +307,26 @@ const ProductsList = (props) => {
                           </h4>
                         </Tooltip>
 
-                        {product.variants && product.variants.length > 1 && (
+                        {product.variants && product.variants.length > 0 && (
                           <div className="mb-2">
-                            <div className="text-xs text-gray-600 mb-1">Size:</div>
-                            <div className="flex flex-wrap gap-1">
-                              {product.variants.map((variant, idx) => {
-                                const isSelected = (product.selectedVariant?.variant_id || product.selectedVariant?.id) === (variant.variant_id || variant.id);
-                                const isOutOfStock = variant.stock === 0;
+                            {product.variants.length === 1 ? (
+                              <div className="text-xs text-gray-600">
+                                Size: {product.variants[0].size}
+                              </div>
+                            ) : (
+                              <>
+                                <div className="text-xs text-gray-600 mb-1">Size:</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {product.variants.map((variant, idx) => {
+                                    const isSelected = (product.selectedVariant?.variant_id || product.selectedVariant?.id) === (variant.variant_id || variant.id);
+                                    const isOutOfStock = variant.stock === 0;
 
-                                return (
-                                  <button
-                                    key={variant.variant_id || variant.id || idx}
-                                    onClick={() => !isOutOfStock && handleVariantSelect(product.id, variant)}
-                                    disabled={isOutOfStock}
-                                    className={`
+                                    return (
+                                      <button
+                                        key={variant.variant_id || variant.id || idx}
+                                        onClick={() => !isOutOfStock && handleVariantSelect(product.id, variant)}
+                                        disabled={isOutOfStock}
+                                        className={`
                                 px-1.5 py-0.5 text-xs border rounded transition-all duration-200
                                 ${isSelected
                                         ? 'border-gray-800 bg-gray-800 text-white'
@@ -329,12 +336,14 @@ const ProductsList = (props) => {
                                       }
                                 min-w-[18px] text-center
                               `}
-                                  >
-                                    {variant.size}
-                                  </button>
-                                );
-                              })}
-                            </div>
+                                      >
+                                        {variant.size}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </>
+                            )}
                           </div>
                         )}
 

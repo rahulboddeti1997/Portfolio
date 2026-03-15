@@ -64,6 +64,8 @@ class SearchService {
         occasion_filter: filters.occasion
       });
 
+      console.log("Search results:", rows);
+
       if (searchError) {
         throw searchError;
       }
@@ -79,6 +81,7 @@ class SearchService {
           grouped[row.product_id] = {
             product_id: row.product_id,
             name: row.name,
+            image_url: row.image_url,
             description: row.description,
             base_price: row.base_price,
             category: row.category,
